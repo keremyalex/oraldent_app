@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:odontologia_app/providers/auth_provider.dart';
-import 'package:odontologia_app/screens/citas_screen.dart';
-import 'package:odontologia_app/screens/dashboard_screen.dart';
-import 'package:odontologia_app/screens/home_screen.dart';
-import 'package:odontologia_app/screens/login_screen.dart';
-import 'package:odontologia_app/screens/pacientes_screen.dart';
+import 'package:odontologia_app/screens/citas/citas_screen.dart';
+import 'package:odontologia_app/screens/dashboard/dashboard_screen.dart';
+import 'package:odontologia_app/screens/home/home_screen.dart';
+import 'package:odontologia_app/screens/login/login_screen.dart';
+import 'package:odontologia_app/screens/pacientes/pacientes_screen.dart';
 import 'package:odontologia_app/screens/settings/schedule_settings_screen.dart';
 import 'package:odontologia_app/screens/settings/services_settings_screen.dart';
 import 'package:odontologia_app/screens/settings/settings_screen.dart';
