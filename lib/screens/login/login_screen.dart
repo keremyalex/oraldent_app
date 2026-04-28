@@ -108,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (success) {
-      context.go('/dashboard');
+      context.go('/citas');
     }
   }
 }

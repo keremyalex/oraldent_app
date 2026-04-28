@@ -1,7 +1,34 @@
+import 'package:dio/dio.dart';
 import 'package:odontologia_app/core/api_client.dart';
 import 'package:odontologia_app/models/auth_session.dart';
 import 'package:odontologia_app/models/usuario_auth.dart';
 import 'package:odontologia_app/services/session_storage.dart';
+
+class PerfilUsuarioRequest {
+  const PerfilUsuarioRequest({
+    required this.nombre,
+    required this.apellidoPaterno,
+    required this.correo,
+    required this.celular,
+    this.apellidoMaterno,
+  });
+
+  final String nombre;
+  final String apellidoPaterno;
+  final String? apellidoMaterno;
+  final String correo;
+  final String celular;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'nombre': nombre,
+      'apellidoPaterno': apellidoPaterno,
+      'apellidoMaterno': apellidoMaterno,
+      'correo': correo,
+      'celular': celular,
+    };
+  }
+}
 
 class AuthService {
   const AuthService(
@@ -54,6 +81,32 @@ class AuthService {
       await logout();
       return null;
     }
+  }
+
+  Future<UsuarioAuth> subirFotoPerfil(String filePath) async {
+    final response = await _apiClient.dio.put<Map<String, dynamic>>(
+      '/api/auth/me/foto-perfil',
+      data: FormData.fromMap({
+        'archivo': await MultipartFile.fromFile(filePath),
+      }),
+    );
+    return UsuarioAuth.fromJson(response.data!);
+  }
+
+  Future<AuthSession> actualizarPerfil(PerfilUsuarioRequest request) async {
+    final response = await _apiClient.dio.put<Map<String, dynamic>>(
+      '/api/auth/me',
+      data: request.toJson(),
+    );
+
+    final session = AuthSession.fromJson(response.data!);
+    _apiClient.setAuthToken(session.token);
+    await _sessionStorage.saveSession(session);
+    return session;
+  }
+
+  Future<void> saveSession(AuthSession session) {
+    return _sessionStorage.saveSession(session);
   }
 
   Future<void> logout() async {

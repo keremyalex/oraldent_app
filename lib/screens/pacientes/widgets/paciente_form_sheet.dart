@@ -3,6 +3,7 @@ import 'package:odontologia_app/models/paciente.dart';
 import 'package:odontologia_app/providers/pacientes_provider.dart';
 import 'package:odontologia_app/services/pacientes_service.dart';
 import 'package:odontologia_app/theme/app_colors.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class PacienteFormSheet extends StatefulWidget {
@@ -26,8 +27,8 @@ class _PacienteFormSheetState extends State<PacienteFormSheet> {
   final _documentoController = TextEditingController();
   final _correoController = TextEditingController();
   final _direccionController = TextEditingController();
-  final _fotoController = TextEditingController();
   DateTime? _fechaNacimiento;
+  XFile? _selectedPhoto;
 
   @override
   void initState() {
@@ -41,7 +42,6 @@ class _PacienteFormSheetState extends State<PacienteFormSheet> {
       _documentoController.text = paciente.documentoIdentidad ?? '';
       _correoController.text = paciente.correo ?? '';
       _direccionController.text = paciente.direccion ?? '';
-      _fotoController.text = paciente.fotoUrl ?? '';
       _fechaNacimiento = paciente.fechaNacimiento;
     }
   }
@@ -55,7 +55,6 @@ class _PacienteFormSheetState extends State<PacienteFormSheet> {
     _documentoController.dispose();
     _correoController.dispose();
     _direccionController.dispose();
-    _fotoController.dispose();
     super.dispose();
   }
 
@@ -149,12 +148,14 @@ class _PacienteFormSheetState extends State<PacienteFormSheet> {
                 enabled: !provider.isSaving,
               ),
               const SizedBox(height: 14),
-              _PatientTextField(
-                controller: _fotoController,
-                label: 'URL de foto',
-                icon: Icons.image_outlined,
-                keyboardType: TextInputType.url,
+              _PatientPhotoPicker(
+                currentPhotoUrl: widget.paciente?.fotoUrl,
+                selectedPhotoName: _selectedPhoto?.name,
                 enabled: !provider.isSaving,
+                onPick: _pickPhoto,
+                onClear: _selectedPhoto == null
+                    ? null
+                    : () => setState(() => _selectedPhoto = null),
               ),
               const SizedBox(height: 22),
               SizedBox(
@@ -226,10 +227,11 @@ class _PacienteFormSheetState extends State<PacienteFormSheet> {
       correo: _emptyToNull(_correoController.text),
       fechaNacimiento: _fechaNacimiento,
       direccion: _emptyToNull(_direccionController.text),
-      fotoUrl: _emptyToNull(_fotoController.text),
+      fotoUrl: widget.paciente?.fotoUrl,
     );
 
-    final message = await context.read<PacientesProvider>().save(
+    final provider = context.read<PacientesProvider>();
+    final result = await provider.savePaciente(
           id: widget.paciente?.id,
           request: request,
         );
@@ -238,7 +240,28 @@ class _PacienteFormSheetState extends State<PacienteFormSheet> {
       return;
     }
 
-    if (message == null) {
+    if (result.errorMessage == null) {
+      if (_selectedPhoto != null && result.paciente != null) {
+        final photoMessage = await provider.uploadPhoto(
+          id: result.paciente!.id,
+          filePath: _selectedPhoto!.path,
+        );
+
+        if (!context.mounted) {
+          return;
+        }
+
+        if (photoMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(photoMessage),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
+      }
+
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -255,10 +278,22 @@ class _PacienteFormSheetState extends State<PacienteFormSheet> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(result.errorMessage!),
         behavior: SnackBarBehavior.floating,
       ),
     );
+  }
+
+  Future<void> _pickPhoto() async {
+    final image = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 82,
+      maxWidth: 1200,
+    );
+
+    if (image != null) {
+      setState(() => _selectedPhoto = image);
+    }
   }
 
   String? _emptyToNull(String value) {
@@ -363,5 +398,100 @@ class _DateFieldButton extends StatelessWidget {
     final day = date.day.toString().padLeft(2, '0');
     final month = date.month.toString().padLeft(2, '0');
     return '$day/$month/${date.year}';
+  }
+}
+
+class _PatientPhotoPicker extends StatelessWidget {
+  const _PatientPhotoPicker({
+    required this.currentPhotoUrl,
+    required this.selectedPhotoName,
+    required this.enabled,
+    required this.onPick,
+    required this.onClear,
+  });
+
+  final String? currentPhotoUrl;
+  final String? selectedPhotoName;
+  final bool enabled;
+  final VoidCallback onPick;
+  final VoidCallback? onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final hasCurrentPhoto = currentPhotoUrl != null && currentPhotoUrl!.isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.10),
+              shape: BoxShape.circle,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: hasCurrentPhoto
+                ? Image.network(
+                    currentPhotoUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.person_outline_rounded,
+                        color: AppColors.primary,
+                      );
+                    },
+                  )
+                : const Icon(
+                    Icons.person_outline_rounded,
+                    color: AppColors.primary,
+                  ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Foto del paciente',
+                  style: textTheme.labelLarge?.copyWith(
+                    color: AppColors.inverted,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  selectedPhotoName ??
+                      (hasCurrentPhoto ? 'Foto cargada' : 'Sin foto'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.labelLarge?.copyWith(
+                    color: AppColors.secondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: enabled ? onPick : null,
+            icon: const Icon(Icons.photo_camera_outlined),
+            color: AppColors.primary,
+          ),
+          if (onClear != null)
+            IconButton(
+              onPressed: enabled ? onClear : null,
+              icon: const Icon(Icons.close_rounded),
+            ),
+        ],
+      ),
+    );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:odontologia_app/theme/app_colors.dart';
 
 class CitasHeader extends StatelessWidget {
@@ -39,13 +38,20 @@ class CitasHeader extends StatelessWidget {
             ],
           ),
         ),
-        IconButton.filledTonal(
-          onPressed: () => context.go('/dashboard'),
-          icon: const Icon(Icons.home_rounded),
-          color: AppColors.primary,
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.white,
-            fixedSize: const Size(48, 48),
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Image.asset(
+              'assets/images/logo.png',
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ],

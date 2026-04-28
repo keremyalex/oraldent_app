@@ -46,7 +46,7 @@ class _CitasScreenState extends State<CitasScreen> {
     final auth = context.watch<AuthProvider>();
     final textTheme = Theme.of(context).textTheme;
 
-    return DashboardBackGuard(
+    return ExitConfirmGuard(
       child: Scaffold(
         backgroundColor: AppColors.neutral,
         bottomNavigationBar: const AppBottomNavigation(

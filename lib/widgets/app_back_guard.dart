@@ -63,7 +63,7 @@ class DashboardBackGuard extends StatelessWidget {
         if (didPop) {
           return;
         }
-        context.go('/dashboard');
+        context.go('/citas');
       },
       child: child,
     );

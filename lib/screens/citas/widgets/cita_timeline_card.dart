@@ -118,6 +118,9 @@ class CitaTimelineCard extends StatelessWidget {
                             spacing: 12,
                             runSpacing: 8,
                             children: [
+                              _OriginBadge(
+                                isApp: cita.registradaDesdeApp,
+                              ),
                               _InfoPill(
                                 icon: Icons.schedule_rounded,
                                 text: '${duration.inMinutes} min',
@@ -201,6 +204,45 @@ class _StatusChip extends StatelessWidget {
               color: color,
               fontSize: 11,
             ),
+      ),
+    );
+  }
+}
+
+class _OriginBadge extends StatelessWidget {
+  const _OriginBadge({
+    required this.isApp,
+  });
+
+  final bool isApp;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isApp ? AppColors.primary : const Color(0xFF7C5800);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.11),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isApp ? Icons.phone_iphone_rounded : Icons.public_rounded,
+            color: color,
+            size: 14,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            isApp ? 'App' : 'Web',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: color,
+                  fontSize: 11,
+                ),
+          ),
+        ],
       ),
     );
   }

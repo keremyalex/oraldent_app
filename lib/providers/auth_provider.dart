@@ -56,6 +56,50 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<String?> uploadProfilePhoto(String filePath) async {
+    final currentSession = _session;
+    if (currentSession == null) {
+      return 'No hay una sesion activa.';
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final usuario = await _authService.subirFotoPerfil(filePath);
+      final updatedSession = AuthSession(
+        token: currentSession.token,
+        tipoToken: currentSession.tipoToken,
+        usuario: usuario,
+      );
+      await _authService.saveSession(updatedSession);
+      _session = updatedSession;
+      return null;
+    } catch (error) {
+      return apiErrorMessage(error);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> updateProfile(PerfilUsuarioRequest request) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _session = await _authService.actualizarPerfil(request);
+      return null;
+    } catch (error) {
+      return apiErrorMessage(error);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> logout() async {
     await _authService.logout();
     _session = null;

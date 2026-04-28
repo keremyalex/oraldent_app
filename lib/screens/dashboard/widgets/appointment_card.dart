@@ -81,6 +81,18 @@ class AppointmentCard extends StatelessWidget {
                       fontSize: 12,
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      _OriginBadge(isApp: cita.registradaDesdeApp),
+                      _StatusBadge(
+                        label: _statusLabel(cita.estado),
+                        color: color,
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -93,24 +105,6 @@ class AppointmentCard extends StatelessWidget {
                   cita.hora,
                   style: textTheme.labelLarge?.copyWith(
                     color: AppColors.inverted,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  child: Text(
-                    _statusLabel(cita.estado),
-                    style: textTheme.labelLarge?.copyWith(
-                      color: color,
-                      fontSize: 11,
-                    ),
                   ),
                 ),
               ],
@@ -142,5 +136,61 @@ class AppointmentCard extends StatelessWidget {
       'NO_ASISTIO' => 'No asistio',
       _ => status,
     };
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({
+    required this.label,
+    required this.color,
+  });
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: color,
+              fontSize: 11,
+            ),
+      ),
+    );
+  }
+}
+
+class _OriginBadge extends StatelessWidget {
+  const _OriginBadge({
+    required this.isApp,
+  });
+
+  final bool isApp;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isApp ? AppColors.primary : const Color(0xFF7C5800);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.11),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        isApp ? 'App' : 'Web',
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: color,
+              fontSize: 11,
+            ),
+      ),
+    );
   }
 }

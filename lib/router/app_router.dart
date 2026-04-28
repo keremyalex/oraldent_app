@@ -24,7 +24,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       final isPublicRoute = publicRoutes.contains(location);
 
       if (authProvider.isAuthenticated && isPublicRoute) {
-        return '/dashboard';
+        return '/citas';
       }
 
       if (!authProvider.isAuthenticated && !isPublicRoute) {

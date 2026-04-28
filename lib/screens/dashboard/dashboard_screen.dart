@@ -45,7 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Scaffold(
         backgroundColor: AppColors.neutral,
         bottomNavigationBar: const AppBottomNavigation(
-          currentTab: AppTab.dashboard,
+          currentTab: AppTab.appointments,
         ),
         body: SafeArea(
           child: CustomScrollView(

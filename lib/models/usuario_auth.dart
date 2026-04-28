@@ -8,7 +8,6 @@ class UsuarioAuth {
     this.apellidoMaterno,
     this.correo,
     this.fotoPerfilUrl,
-    this.pacienteId,
   });
 
   factory UsuarioAuth.fromJson(Map<String, dynamic> json) {
@@ -21,7 +20,6 @@ class UsuarioAuth {
       celular: json['celular'] as String,
       rol: json['rol'] as String,
       fotoPerfilUrl: json['fotoPerfilUrl'] as String?,
-      pacienteId: json['pacienteId'] as int?,
     );
   }
 
@@ -35,7 +33,6 @@ class UsuarioAuth {
       'celular': celular,
       'rol': rol,
       'fotoPerfilUrl': fotoPerfilUrl,
-      'pacienteId': pacienteId,
     };
   }
 
@@ -47,7 +44,6 @@ class UsuarioAuth {
   final String celular;
   final String rol;
   final String? fotoPerfilUrl;
-  final int? pacienteId;
 
   String get nombreCompleto {
     final materno = apellidoMaterno;

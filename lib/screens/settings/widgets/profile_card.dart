@@ -6,11 +6,17 @@ class ProfileCard extends StatelessWidget {
   const ProfileCard({
     required this.usuario,
     required this.onLogout,
+    required this.onChangePhoto,
+    required this.onEditProfile,
+    this.isUploadingPhoto = false,
     super.key,
   });
 
   final UsuarioAuth? usuario;
   final VoidCallback onLogout;
+  final VoidCallback onChangePhoto;
+  final VoidCallback onEditProfile;
+  final bool isUploadingPhoto;
 
   @override
   Widget build(BuildContext context) {
@@ -38,40 +44,11 @@ class ProfileCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 68,
-                height: 68,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.10),
-                  shape: BoxShape.circle,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: user?.fotoPerfilUrl == null ||
-                        user!.fotoPerfilUrl!.isEmpty
-                    ? Center(
-                        child: Text(
-                          initials,
-                          style: textTheme.displayLarge?.copyWith(
-                            color: AppColors.primary,
-                            fontSize: 22,
-                          ),
-                        ),
-                      )
-                    : Image.network(
-                        user.fotoPerfilUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Text(
-                              initials,
-                              style: textTheme.displayLarge?.copyWith(
-                                color: AppColors.primary,
-                                fontSize: 22,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+              _ProfileAvatar(
+                user: user,
+                initials: initials,
+                isUploading: isUploadingPhoto,
+                onTap: onChangePhoto,
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -110,6 +87,41 @@ class ProfileCard extends StatelessWidget {
           const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
+            height: 46,
+            child: FilledButton.icon(
+              onPressed: isUploadingPhoto ? null : onEditProfile,
+              icon: const Icon(Icons.edit_outlined),
+              label: const Text('Editar datos'),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            height: 46,
+            child: OutlinedButton.icon(
+              onPressed: isUploadingPhoto ? null : onChangePhoto,
+              icon: isUploadingPhoto
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.photo_camera_outlined),
+              label: Text(
+                isUploadingPhoto ? 'Subiendo foto...' : 'Cambiar foto',
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                side: const BorderSide(color: AppColors.primary),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
             height: 48,
             child: OutlinedButton.icon(
               onPressed: onLogout,
@@ -121,6 +133,88 @@ class ProfileCard extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  const _ProfileAvatar({
+    required this.user,
+    required this.initials,
+    required this.isUploading,
+    required this.onTap,
+  });
+
+  final UsuarioAuth? user;
+  final String initials;
+  final bool isUploading;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final photo = user?.fotoPerfilUrl;
+
+    return InkWell(
+      onTap: isUploading ? null : onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 68,
+            height: 68,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.10),
+              shape: BoxShape.circle,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: photo == null || photo.isEmpty
+                ? Center(
+                    child: Text(
+                      initials,
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                            color: AppColors.primary,
+                            fontSize: 22,
+                          ),
+                    ),
+                  )
+                : Image.network(
+                    photo,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Text(
+                          initials,
+                          style:
+                              Theme.of(context).textTheme.displayLarge?.copyWith(
+                                    color: AppColors.primary,
+                                    fontSize: 22,
+                                  ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          Positioned(
+            right: -2,
+            bottom: -2,
+            child: Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: const Icon(
+                Icons.photo_camera_outlined,
+                color: Colors.white,
+                size: 14,
               ),
             ),
           ),

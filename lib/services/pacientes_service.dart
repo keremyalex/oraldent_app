@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:odontologia_app/core/api_client.dart';
 import 'package:odontologia_app/models/paciente.dart';
 
@@ -73,6 +74,19 @@ class PacientesService {
     final response = await _apiClient.dio.put<Map<String, dynamic>>(
       '/api/pacientes/$id',
       data: request.toJson(),
+    );
+    return Paciente.fromJson(response.data!);
+  }
+
+  Future<Paciente> subirFoto({
+    required int id,
+    required String filePath,
+  }) async {
+    final response = await _apiClient.dio.put<Map<String, dynamic>>(
+      '/api/pacientes/$id/foto',
+      data: FormData.fromMap({
+        'archivo': await MultipartFile.fromFile(filePath),
+      }),
     );
     return Paciente.fromJson(response.data!);
   }

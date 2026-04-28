@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:odontologia_app/theme/app_colors.dart';
 
-enum AppTab { dashboard, patients, appointments, settings }
+enum AppTab { appointments, patients, settings }
 
 class AppBottomNavigation extends StatelessWidget {
   const AppBottomNavigation({
@@ -22,19 +22,14 @@ class AppBottomNavigation extends StatelessWidget {
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       destinations: const [
         NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home_rounded),
-          label: 'Inicio',
+          icon: Icon(Icons.calendar_today_outlined),
+          selectedIcon: Icon(Icons.calendar_month_rounded),
+          label: 'Citas',
         ),
         NavigationDestination(
           icon: Icon(Icons.group_outlined),
           selectedIcon: Icon(Icons.group_rounded),
           label: 'Pacientes',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.calendar_today_outlined),
-          selectedIcon: Icon(Icons.calendar_month_rounded),
-          label: 'Citas',
         ),
         NavigationDestination(
           icon: Icon(Icons.settings_outlined),
@@ -49,8 +44,6 @@ class AppBottomNavigation extends StatelessWidget {
         }
 
         switch (selectedTab) {
-          case AppTab.dashboard:
-            context.go('/dashboard');
           case AppTab.appointments:
             context.go('/citas');
           case AppTab.patients:

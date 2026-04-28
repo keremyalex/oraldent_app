@@ -9,6 +9,7 @@ class Cita {
     required this.fechaHoraFin,
     required this.motivo,
     required this.estado,
+    this.usuarioRegistradorId,
     this.servicio,
     this.codigoGestion,
     this.notas,
@@ -25,6 +26,7 @@ class Cita {
       fechaHoraFin: DateTime.parse(json['fechaHoraFin'] as String),
       motivo: json['motivo'] as String,
       estado: json['estado'] as String,
+      usuarioRegistradorId: json['usuarioRegistradorId'] as int?,
       codigoGestion: json['codigoGestion'] as String?,
       notas: json['notas'] as String?,
     );
@@ -37,8 +39,11 @@ class Cita {
   final DateTime fechaHoraFin;
   final String motivo;
   final String estado;
+  final int? usuarioRegistradorId;
   final String? codigoGestion;
   final String? notas;
+
+  bool get registradaDesdeApp => usuarioRegistradorId != null;
 
   String get tituloServicio => servicio?.nombre ?? motivo;
 

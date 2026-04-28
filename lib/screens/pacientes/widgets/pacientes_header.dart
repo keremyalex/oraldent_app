@@ -40,7 +40,7 @@ class PacientesHeader extends StatelessWidget {
           ),
         ),
         IconButton.filledTonal(
-          onPressed: () => context.go('/dashboard'),
+          onPressed: () => context.go('/citas'),
           icon: const Icon(Icons.home_rounded),
           color: AppColors.primary,
           style: IconButton.styleFrom(
