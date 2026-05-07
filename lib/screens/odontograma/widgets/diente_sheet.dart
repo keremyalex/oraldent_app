@@ -1,0 +1,285 @@
+import 'package:flutter/material.dart';
+import 'package:odontologia_app/models/odontograma.dart';
+import 'package:odontologia_app/providers/odontograma_provider.dart';
+import 'package:odontologia_app/screens/odontograma/widgets/tooth_diagram.dart';
+import 'package:odontologia_app/services/odontograma_service.dart';
+import 'package:odontologia_app/theme/app_colors.dart';
+import 'package:provider/provider.dart';
+
+class DienteSheet extends StatefulWidget {
+  const DienteSheet({required this.diente, super.key});
+
+  final OdontogramaDiente diente;
+
+  @override
+  State<DienteSheet> createState() => _DienteSheetState();
+}
+
+class _DienteSheetState extends State<DienteSheet> {
+  late bool _ausente;
+  late bool _implante;
+  late bool _corona;
+  late bool _endodoncia;
+  late bool _extraccionIndicada;
+  late int? _movilidad;
+  String? _selectedFace = OdontogramaCaraTipo.oclusal;
+  late final TextEditingController _observacionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _ausente = widget.diente.ausente;
+    _implante = widget.diente.implante;
+    _corona = widget.diente.corona;
+    _endodoncia = widget.diente.endodoncia;
+    _extraccionIndicada = widget.diente.extraccionIndicada;
+    _movilidad = widget.diente.movilidad;
+    _observacionController = TextEditingController(
+      text: widget.diente.observacion ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _observacionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<OdontogramaProvider>();
+    final diente =
+        provider.odontograma?.dientePorFdi(widget.diente.numeroFdi) ??
+        widget.diente;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        18,
+        20,
+        MediaQuery.viewInsetsOf(context).bottom + 20,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Pieza ${diente.numeroFdi}',
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      color: AppColors.inverted,
+                      fontSize: 22,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Center(
+              child: SizedBox(
+                width: 190,
+                height: 190,
+                child: ToothDiagram(
+                  diente: diente,
+                  selectedFace: _selectedFace,
+                  onFaceTap: (face) => _toggleFaceByType(context, diente, face),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Center(
+              child: Text(
+                _selectedFace == null
+                    ? 'Selecciona una cara'
+                    : '${OdontogramaCaraTipo.label(_selectedFace!)}: ${OdontogramaColor.label(diente.cara(_selectedFace!).color)}',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: AppColors.secondary,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final cara in diente.caras)
+                  ActionChip(
+                    avatar: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: OdontogramaColor.asColor(cara.color),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFCBD5E1)),
+                      ),
+                    ),
+                    label: Text(OdontogramaCaraTipo.label(cara.tipo)),
+                    onPressed: provider.isSaving
+                        ? null
+                        : () => _toggleCara(context, diente, cara),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _SwitchTile(
+              value: _ausente,
+              title: 'Ausente',
+              onChanged: (value) => setState(() => _ausente = value),
+            ),
+            _SwitchTile(
+              value: _implante,
+              title: 'Implante',
+              onChanged: (value) => setState(() => _implante = value),
+            ),
+            _SwitchTile(
+              value: _corona,
+              title: 'Corona',
+              onChanged: (value) => setState(() => _corona = value),
+            ),
+            _SwitchTile(
+              value: _endodoncia,
+              title: 'Endodoncia',
+              onChanged: (value) => setState(() => _endodoncia = value),
+            ),
+            _SwitchTile(
+              value: _extraccionIndicada,
+              title: 'Extraccion indicada',
+              onChanged: (value) => setState(() => _extraccionIndicada = value),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<int?>(
+              initialValue: _movilidad,
+              decoration: const InputDecoration(
+                labelText: 'Movilidad',
+                prefixIcon: Icon(Icons.swap_vert_rounded),
+              ),
+              items: const [
+                DropdownMenuItem<int?>(
+                  value: null,
+                  child: Text('Sin movilidad'),
+                ),
+                DropdownMenuItem(value: 0, child: Text('Grado 0')),
+                DropdownMenuItem(value: 1, child: Text('Grado 1')),
+                DropdownMenuItem(value: 2, child: Text('Grado 2')),
+                DropdownMenuItem(value: 3, child: Text('Grado 3')),
+              ],
+              onChanged: (value) => setState(() => _movilidad = value),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _observacionController,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: 'Observacion',
+                prefixIcon: Icon(Icons.edit_note_rounded),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: provider.isSaving ? null : () => _save(context),
+                icon: provider.isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.save_rounded),
+                label: const Text('Guardar pieza'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleCara(
+    BuildContext context,
+    OdontogramaDiente diente,
+    OdontogramaCara cara,
+  ) async {
+    setState(() => _selectedFace = cara.tipo);
+    final message = await context.read<OdontogramaProvider>().alternarCara(
+      diente: diente,
+      cara: cara,
+    );
+    if (!context.mounted || message == null) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  Future<void> _toggleFaceByType(
+    BuildContext context,
+    OdontogramaDiente diente,
+    String face,
+  ) {
+    return _toggleCara(context, diente, diente.cara(face));
+  }
+
+  Future<void> _save(BuildContext context) async {
+    final message = await context.read<OdontogramaProvider>().actualizarDiente(
+      diente: widget.diente,
+      request: OdontogramaDienteRequest(
+        ausente: _ausente,
+        implante: _implante,
+        corona: _corona,
+        endodoncia: _endodoncia,
+        extraccionIndicada: _extraccionIndicada,
+        movilidad: _movilidad,
+        observacion: _observacionController.text.trim().isEmpty
+            ? null
+            : _observacionController.text.trim(),
+      ),
+    );
+    if (!context.mounted) {
+      return;
+    }
+    if (message == null) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Pieza guardada.')));
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+}
+
+class _SwitchTile extends StatelessWidget {
+  const _SwitchTile({
+    required this.value,
+    required this.title,
+    required this.onChanged,
+  });
+
+  final bool value;
+  final String title;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      value: value,
+      onChanged: onChanged,
+      title: Text(title),
+      contentPadding: EdgeInsets.zero,
+      activeThumbColor: AppColors.primary,
+    );
+  }
+}
