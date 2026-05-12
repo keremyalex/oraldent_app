@@ -36,6 +36,7 @@ class ToothDiagram extends StatelessWidget {
             final face = _ToothGeometry.faceAt(
               details.localPosition,
               Size(constraints.maxWidth, constraints.maxHeight),
+              diente.cuadrante,
             );
             if (face != null) {
               onFaceTap!(face);
@@ -68,7 +69,7 @@ class _ToothDiagramPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = size.shortestSide > 90 ? 3 : 1.8;
 
-    final paths = _ToothGeometry.paths(size);
+    final paths = _ToothGeometry.paths(size, diente.cuadrante);
     for (final tipo in OdontogramaCaraTipo.all) {
       final path = paths[tipo];
       if (path == null) {
@@ -93,33 +94,38 @@ class _ToothDiagramPainter extends CustomPainter {
 }
 
 class _ToothGeometry {
-  static Map<String, Path> paths(Size size) {
+  static Map<String, Path> paths(Size size, int cuadrante) {
     final side = size.shortestSide;
     final left = (size.width - side) / 2 + 1;
     final top = (size.height - side) / 2 + 1;
     final outer = Rect.fromLTWH(left, top, side - 2, side - 2);
     final inner = outer.deflate(outer.width * 0.30);
 
+    final topFace = _topFace(cuadrante);
+    final bottomFace = _bottomFace(cuadrante);
+    final leftFace = _leftFace(cuadrante);
+    final rightFace = _rightFace(cuadrante);
+
     return {
-      OdontogramaCaraTipo.vestibular: Path()
+      topFace: Path()
         ..moveTo(outer.left, outer.top)
         ..lineTo(outer.right, outer.top)
         ..lineTo(inner.right, inner.top)
         ..lineTo(inner.left, inner.top)
         ..close(),
-      OdontogramaCaraTipo.distal: Path()
+      rightFace: Path()
         ..moveTo(outer.right, outer.top)
         ..lineTo(outer.right, outer.bottom)
         ..lineTo(inner.right, inner.bottom)
         ..lineTo(inner.right, inner.top)
         ..close(),
-      OdontogramaCaraTipo.palatino: Path()
+      bottomFace: Path()
         ..moveTo(outer.right, outer.bottom)
         ..lineTo(outer.left, outer.bottom)
         ..lineTo(inner.left, inner.bottom)
         ..lineTo(inner.right, inner.bottom)
         ..close(),
-      OdontogramaCaraTipo.mesial: Path()
+      leftFace: Path()
         ..moveTo(outer.left, outer.bottom)
         ..lineTo(outer.left, outer.top)
         ..lineTo(inner.left, inner.top)
@@ -129,7 +135,7 @@ class _ToothGeometry {
     };
   }
 
-  static String? faceAt(Offset position, Size size) {
+  static String? faceAt(Offset position, Size size, int cuadrante) {
     final side = size.shortestSide;
     final left = (size.width - side) / 2 + 1;
     final top = (size.height - side) / 2 + 1;
@@ -143,14 +149,38 @@ class _ToothGeometry {
       return OdontogramaCaraTipo.oclusal;
     }
     if (position.dy < inner.top) {
-      return OdontogramaCaraTipo.vestibular;
+      return _topFace(cuadrante);
     }
     if (position.dy > inner.bottom) {
-      return OdontogramaCaraTipo.palatino;
+      return _bottomFace(cuadrante);
     }
     if (position.dx < inner.left) {
-      return OdontogramaCaraTipo.mesial;
+      return _leftFace(cuadrante);
     }
-    return OdontogramaCaraTipo.distal;
+    return _rightFace(cuadrante);
+  }
+
+  static String _topFace(int cuadrante) {
+    return cuadrante == 3 || cuadrante == 4
+        ? OdontogramaCaraTipo.palatino
+        : OdontogramaCaraTipo.vestibular;
+  }
+
+  static String _bottomFace(int cuadrante) {
+    return cuadrante == 3 || cuadrante == 4
+        ? OdontogramaCaraTipo.vestibular
+        : OdontogramaCaraTipo.palatino;
+  }
+
+  static String _leftFace(int cuadrante) {
+    return cuadrante == 1 || cuadrante == 4
+        ? OdontogramaCaraTipo.distal
+        : OdontogramaCaraTipo.mesial;
+  }
+
+  static String _rightFace(int cuadrante) {
+    return cuadrante == 1 || cuadrante == 4
+        ? OdontogramaCaraTipo.mesial
+        : OdontogramaCaraTipo.distal;
   }
 }

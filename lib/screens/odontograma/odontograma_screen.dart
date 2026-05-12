@@ -4,8 +4,8 @@ import 'package:odontologia_app/models/odontograma.dart';
 import 'package:odontologia_app/models/paciente.dart';
 import 'package:odontologia_app/providers/odontograma_provider.dart';
 import 'package:odontologia_app/screens/odontograma/widgets/diente_sheet.dart';
-import 'package:odontologia_app/screens/odontograma/widgets/odontograma_arcade_section.dart';
 import 'package:odontologia_app/screens/odontograma/widgets/odontograma_message.dart';
+import 'package:odontologia_app/screens/odontograma/widgets/odontograma_quadrant_section.dart';
 import 'package:odontologia_app/screens/odontograma/widgets/odontograma_summary_band.dart';
 import 'package:odontologia_app/theme/app_colors.dart';
 import 'package:provider/provider.dart';
@@ -238,18 +238,34 @@ class _OdontogramaBody extends StatelessWidget {
       children: [
         OdontogramaSummaryBand(odontograma: odontograma),
         const SizedBox(height: 16),
-        OdontogramaArcadeSection(
-          title: 'Arcada superior',
-          firstRow: const [18, 17, 16, 15, 14, 13, 12, 11],
-          secondRow: const [21, 22, 23, 24, 25, 26, 27, 28],
+        OdontogramaQuadrantSection(
+          title: 'Cuadrante 1',
+          subtitle: 'Superior derecho',
+          numbers: const [18, 17, 16, 15, 14, 13, 12, 11],
           odontograma: odontograma,
           onDienteTap: onOpenDiente,
         ),
         const SizedBox(height: 14),
-        OdontogramaArcadeSection(
-          title: 'Arcada inferior',
-          firstRow: const [48, 47, 46, 45, 44, 43, 42, 41],
-          secondRow: const [31, 32, 33, 34, 35, 36, 37, 38],
+        OdontogramaQuadrantSection(
+          title: 'Cuadrante 2',
+          subtitle: 'Superior izquierdo',
+          numbers: const [21, 22, 23, 24, 25, 26, 27, 28],
+          odontograma: odontograma,
+          onDienteTap: onOpenDiente,
+        ),
+        const SizedBox(height: 14),
+        OdontogramaQuadrantSection(
+          title: 'Cuadrante 4',
+          subtitle: 'Inferior derecho',
+          numbers: const [48, 47, 46, 45, 44, 43, 42, 41],
+          odontograma: odontograma,
+          onDienteTap: onOpenDiente,
+        ),
+        const SizedBox(height: 14),
+        OdontogramaQuadrantSection(
+          title: 'Cuadrante 3',
+          subtitle: 'Inferior izquierdo',
+          numbers: const [31, 32, 33, 34, 35, 36, 37, 38],
           odontograma: odontograma,
           onDienteTap: onOpenDiente,
         ),

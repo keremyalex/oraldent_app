@@ -3,24 +3,28 @@ import 'package:odontologia_app/models/odontograma.dart';
 import 'package:odontologia_app/screens/odontograma/widgets/tooth_diagram.dart';
 import 'package:odontologia_app/theme/app_colors.dart';
 
-class OdontogramaArcadeSection extends StatelessWidget {
-  const OdontogramaArcadeSection({
+class OdontogramaQuadrantSection extends StatelessWidget {
+  const OdontogramaQuadrantSection({
     required this.title,
-    required this.firstRow,
-    required this.secondRow,
+    required this.subtitle,
+    required this.numbers,
     required this.odontograma,
     required this.onDienteTap,
     super.key,
   });
 
   final String title;
-  final List<int> firstRow;
-  final List<int> secondRow;
+  final String subtitle;
+  final List<int> numbers;
   final Odontograma odontograma;
   final ValueChanged<OdontogramaDiente> onDienteTap;
 
   @override
   Widget build(BuildContext context) {
+    final closestToCenter = numbers.reduce(
+      (current, next) => current % 10 < next % 10 ? current : next,
+    );
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -31,58 +35,67 @@ class OdontogramaArcadeSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: AppColors.inverted,
-              fontSize: 15,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: AppColors.inverted,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.secondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Text(
+                  '$closestToCenter cerca del centro',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
-          _ToothRow(
-            numbers: firstRow,
-            odontograma: odontograma,
-            onDienteTap: onDienteTap,
-          ),
-          const SizedBox(height: 10),
-          _ToothRow(
-            numbers: secondRow,
-            odontograma: odontograma,
-            onDienteTap: onDienteTap,
+          Row(
+            children: [
+              for (final number in numbers)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    child: _ToothTile(
+                      diente: odontograma.dientePorFdi(number),
+                      numeroFdi: number,
+                      onTap: onDienteTap,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
-    );
-  }
-}
-
-class _ToothRow extends StatelessWidget {
-  const _ToothRow({
-    required this.numbers,
-    required this.odontograma,
-    required this.onDienteTap,
-  });
-
-  final List<int> numbers;
-  final Odontograma odontograma;
-  final ValueChanged<OdontogramaDiente> onDienteTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        for (final number in numbers)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              child: _ToothTile(
-                diente: odontograma.dientePorFdi(number),
-                numeroFdi: number,
-                onTap: onDienteTap,
-              ),
-            ),
-          ),
-      ],
     );
   }
 }
