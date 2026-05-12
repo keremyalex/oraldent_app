@@ -79,20 +79,21 @@ class OdontogramaQuadrantSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              for (final number in numbers)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final number in numbers)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
                     child: _ToothTile(
                       diente: odontograma.dientePorFdi(number),
                       numeroFdi: number,
                       onTap: onDienteTap,
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -119,8 +120,9 @@ class _ToothTile extends StatelessWidget {
         ? AppColors.primary
         : const Color(0xFFCBD5E1);
 
-    return AspectRatio(
-      aspectRatio: 0.68,
+    return SizedBox(
+      width: 72,
+      height: 104,
       child: Material(
         color: disabled ? const Color(0xFFF1F5F9) : Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -128,7 +130,7 @@ class _ToothTile extends StatelessWidget {
           onTap: disabled ? null : () => onTap(current),
           borderRadius: BorderRadius.circular(8),
           child: Container(
-            padding: const EdgeInsets.all(3),
+            padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: borderColor),
@@ -145,14 +147,14 @@ class _ToothTile extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: AppColors.inverted,
-                      fontSize: 10,
+                      fontSize: 12,
                       height: 1,
                     ),
                   ),
                 ),
                 Positioned.fill(
-                  top: 12,
-                  bottom: 12,
+                  top: 18,
+                  bottom: 18,
                   child: current == null
                       ? const SizedBox.shrink()
                       : ToothDiagram(diente: current),
@@ -180,15 +182,15 @@ class _ToothStatusIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (diente?.ausente == true) {
-      return const Icon(Icons.close_rounded, size: 12, color: Colors.red);
+      return const Icon(Icons.close_rounded, size: 15, color: Colors.red);
     }
     if (diente?.implante == true) {
       return const Icon(
         Icons.add_circle_outline_rounded,
-        size: 12,
+        size: 15,
         color: AppColors.primary,
       );
     }
-    return const SizedBox(width: 12, height: 12);
+    return const SizedBox(width: 15, height: 15);
   }
 }
