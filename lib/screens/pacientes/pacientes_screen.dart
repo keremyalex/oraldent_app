@@ -32,7 +32,7 @@ class _PacientesScreenState extends State<PacientesScreen> {
     _loaded = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<PacientesProvider>().load();
+        context.read<PacientesProvider>().loadIfNeeded();
       }
     });
   }

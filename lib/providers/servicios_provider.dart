@@ -12,11 +12,13 @@ class ServiciosProvider extends ChangeNotifier {
   bool _isSaving = false;
   String? _errorMessage;
   List<Servicio> _servicios = [];
+  bool _hasLoaded = false;
 
   bool get isLoading => _isLoading;
   bool get isSaving => _isSaving;
   String? get errorMessage => _errorMessage;
   List<Servicio> get servicios => _servicios;
+  bool get hasLoaded => _hasLoaded;
 
   Future<void> load() async {
     _isLoading = true;
@@ -28,12 +30,20 @@ class ServiciosProvider extends ChangeNotifier {
         ..sort(
           (a, b) => a.nombre.toLowerCase().compareTo(b.nombre.toLowerCase()),
         );
+      _hasLoaded = true;
     } catch (error) {
       _errorMessage = apiErrorMessage(error);
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> loadIfNeeded() async {
+    if (_hasLoaded || _isLoading) {
+      return;
+    }
+    await load();
   }
 
   Future<String?> save({

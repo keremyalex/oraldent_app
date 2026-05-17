@@ -13,12 +13,14 @@ class CitasProvider extends ChangeNotifier {
   bool _isSaving = false;
   String? _errorMessage;
   List<Cita> _citas = [];
+  bool _hasLoaded = false;
 
   DateTime get selectedDate => _selectedDate;
   bool get isLoading => _isLoading;
   bool get isSaving => _isSaving;
   String? get errorMessage => _errorMessage;
   List<Cita> get citas => _citas;
+  bool get hasLoaded => _hasLoaded;
 
   Future<void> load({DateTime? date}) async {
     if (date != null) {
@@ -31,12 +33,20 @@ class CitasProvider extends ChangeNotifier {
 
     try {
       _citas = await _citasService.listarPorFecha(_selectedDate);
+      _hasLoaded = true;
     } catch (error) {
       _errorMessage = apiErrorMessage(error);
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> loadIfNeeded() async {
+    if (_hasLoaded || _isLoading) {
+      return;
+    }
+    await load();
   }
 
   Future<List<String>> disponibilidad(DateTime fecha) {
