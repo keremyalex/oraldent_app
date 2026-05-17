@@ -7,12 +7,14 @@ class PacienteCard extends StatelessWidget {
     required this.paciente,
     required this.onTap,
     required this.onOdontogramaTap,
+    required this.onPeriodontogramaTap,
     super.key,
   });
 
   final Paciente paciente;
   final VoidCallback onTap;
   final VoidCallback onOdontogramaTap;
+  final VoidCallback onPeriodontogramaTap;
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +108,12 @@ class PacienteCard extends StatelessWidget {
                     tooltip: 'Odontograma',
                     icon: const Icon(Icons.medical_services_outlined),
                     color: AppColors.primary,
+                  ),
+                  IconButton(
+                    onPressed: onPeriodontogramaTap,
+                    tooltip: 'Periodontograma',
+                    icon: const Icon(Icons.grid_view_rounded),
+                    color: AppColors.secondary,
                   ),
                   Icon(
                     Icons.edit_rounded,
