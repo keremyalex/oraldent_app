@@ -159,8 +159,10 @@ class _PacientesScreenState extends State<PacientesScreen> {
                     itemBuilder: (context, index) {
                       return PacienteCard(
                         paciente: pacientes[index],
-                        onTap: () =>
-                            _openPacienteForm(context, pacientes[index]),
+                        onTap: () => context.push(
+                          '/pacientes/${pacientes[index].id}',
+                          extra: pacientes[index],
+                        ),
                         onOdontogramaTap: () => context.push(
                           '/pacientes/${pacientes[index].id}/odontograma',
                           extra: pacientes[index],

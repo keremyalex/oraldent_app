@@ -7,6 +7,7 @@ import 'package:odontologia_app/screens/dashboard/dashboard_screen.dart';
 import 'package:odontologia_app/screens/home/home_screen.dart';
 import 'package:odontologia_app/screens/login/login_screen.dart';
 import 'package:odontologia_app/screens/odontograma/odontograma_screen.dart';
+import 'package:odontologia_app/screens/pacientes/paciente_detalle_screen.dart';
 import 'package:odontologia_app/screens/pacientes/pacientes_screen.dart';
 import 'package:odontologia_app/screens/periodontograma/periodontograma_screen.dart';
 import 'package:odontologia_app/screens/settings/schedule_settings_screen.dart';
@@ -51,6 +52,16 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/pacientes',
         builder: (context, state) => const PacientesScreen(),
+      ),
+      GoRoute(
+        path: '/pacientes/:pacienteId',
+        builder: (context, state) {
+          final pacienteId = int.parse(state.pathParameters['pacienteId']!);
+          return PacienteDetalleScreen(
+            pacienteId: pacienteId,
+            paciente: state.extra is Paciente ? state.extra as Paciente : null,
+          );
+        },
       ),
       GoRoute(
         path: '/pacientes/:pacienteId/odontograma',
