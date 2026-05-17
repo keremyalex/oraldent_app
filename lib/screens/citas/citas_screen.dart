@@ -33,9 +33,9 @@ class _CitasScreenState extends State<CitasScreen> {
     _loaded = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<CitasProvider>().load();
-        context.read<PacientesProvider>().load();
-        context.read<ServiciosProvider>().load();
+        context.read<CitasProvider>().loadIfNeeded();
+        context.read<PacientesProvider>().loadIfNeeded();
+        context.read<ServiciosProvider>().loadIfNeeded();
       }
     });
   }

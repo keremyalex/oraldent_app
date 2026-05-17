@@ -13,12 +13,14 @@ class PacientesProvider extends ChangeNotifier {
   String? _errorMessage;
   String _query = '';
   List<Paciente> _pacientes = [];
+  bool _hasLoaded = false;
 
   bool get isLoading => _isLoading;
   bool get isSaving => _isSaving;
   String? get errorMessage => _errorMessage;
   String get query => _query;
   List<Paciente> get pacientes => _pacientes;
+  bool get hasLoaded => _hasLoaded;
 
   List<Paciente> get filteredPacientes {
     final normalizedQuery = _normalize(_query);
@@ -46,12 +48,20 @@ class PacientesProvider extends ChangeNotifier {
 
     try {
       _pacientes = await _pacientesService.listar();
+      _hasLoaded = true;
     } catch (error) {
       _errorMessage = apiErrorMessage(error);
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> loadIfNeeded() async {
+    if (_hasLoaded || _isLoading) {
+      return;
+    }
+    await load();
   }
 
   void updateQuery(String value) {
