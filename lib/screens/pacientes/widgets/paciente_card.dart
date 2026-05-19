@@ -3,18 +3,10 @@ import 'package:odontologia_app/models/paciente.dart';
 import 'package:odontologia_app/theme/app_colors.dart';
 
 class PacienteCard extends StatelessWidget {
-  const PacienteCard({
-    required this.paciente,
-    required this.onTap,
-    required this.onOdontogramaTap,
-    required this.onPeriodontogramaTap,
-    super.key,
-  });
+  const PacienteCard({required this.paciente, required this.onTap, super.key});
 
   final Paciente paciente;
   final VoidCallback onTap;
-  final VoidCallback onOdontogramaTap;
-  final VoidCallback onPeriodontogramaTap;
 
   @override
   Widget build(BuildContext context) {
@@ -99,27 +91,6 @@ class PacienteCard extends StatelessWidget {
                     ],
                   ],
                 ),
-              ),
-              const SizedBox(width: 6),
-              Column(
-                children: [
-                  IconButton(
-                    onPressed: onOdontogramaTap,
-                    tooltip: 'Odontograma',
-                    icon: const Icon(Icons.medical_services_outlined),
-                    color: AppColors.primary,
-                  ),
-                  IconButton(
-                    onPressed: onPeriodontogramaTap,
-                    tooltip: 'Periodontograma',
-                    icon: const Icon(Icons.grid_view_rounded),
-                    color: AppColors.secondary,
-                  ),
-                  Icon(
-                    Icons.edit_rounded,
-                    color: AppColors.secondary.withValues(alpha: 0.7),
-                  ),
-                ],
               ),
             ],
           ),

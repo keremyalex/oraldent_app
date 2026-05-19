@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:odontologia_app/models/paciente.dart';
+import 'package:odontologia_app/providers/fichas_provider.dart';
 import 'package:odontologia_app/providers/pacientes_provider.dart';
 import 'package:odontologia_app/screens/pacientes/widgets/ficha_history_section.dart';
 import 'package:odontologia_app/screens/pacientes/widgets/paciente_detail_card.dart';
@@ -35,6 +36,7 @@ class _PacienteDetalleScreenState extends State<PacienteDetalleScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<PacientesProvider>().loadIfNeeded();
+        context.read<FichasProvider>().loadIfNeeded(widget.pacienteId);
       }
     });
   }
@@ -42,6 +44,7 @@ class _PacienteDetalleScreenState extends State<PacienteDetalleScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<PacientesProvider>();
+    final fichasProvider = context.watch<FichasProvider>();
     final paciente = _resolvePaciente(provider);
 
     return Scaffold(
@@ -104,14 +107,19 @@ class _PacienteDetalleScreenState extends State<PacienteDetalleScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
                   child: FichaHistorySection(
-                    onOpenOdontograma: () => context.push(
-                      '/pacientes/${paciente.id}/odontograma',
-                      extra: paciente,
-                    ),
-                    onOpenPeriodontograma: () => context.push(
-                      '/pacientes/${paciente.id}/periodontograma',
-                      extra: paciente,
-                    ),
+                    fichas: fichasProvider.fichas,
+                    isLoading: fichasProvider.isLoading,
+                    isSaving: fichasProvider.isSaving,
+                    errorMessage: fichasProvider.errorMessage,
+                    onRefresh: () =>
+                        context.read<FichasProvider>().load(paciente.id),
+                    onCreateFicha: () => _createFicha(context, paciente),
+                    onOpenFicha: (ficha) =>
+                        _openFichaDetalle(context, paciente, ficha.id),
+                    onOpenOdontograma: (ficha) =>
+                        _openFichaOdontograma(context, paciente, ficha.id),
+                    onOpenPeriodontograma: (ficha) =>
+                        _openFichaPeriodontograma(context, paciente, ficha.id),
                   ),
                 ),
               ),
@@ -150,5 +158,56 @@ class _PacienteDetalleScreenState extends State<PacienteDetalleScreen> {
         );
       },
     );
+  }
+
+  Future<void> _createFicha(BuildContext context, Paciente paciente) async {
+    final message = await context.read<FichasProvider>().crearFichaInicial(
+      paciente.id,
+    );
+    if (!context.mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message ?? 'Ficha clinica creada.'),
+        backgroundColor: message == null ? AppColors.primary : Colors.red,
+      ),
+    );
+  }
+
+  Future<void> _openFichaOdontograma(
+    BuildContext context,
+    Paciente paciente,
+    int fichaId,
+  ) async {
+    await context.push('/fichas/$fichaId/odontograma', extra: paciente);
+    if (!context.mounted) {
+      return;
+    }
+    await context.read<FichasProvider>().load(paciente.id);
+  }
+
+  Future<void> _openFichaDetalle(
+    BuildContext context,
+    Paciente paciente,
+    int fichaId,
+  ) async {
+    await context.push('/fichas/$fichaId', extra: paciente);
+    if (!context.mounted) {
+      return;
+    }
+    await context.read<FichasProvider>().load(paciente.id);
+  }
+
+  Future<void> _openFichaPeriodontograma(
+    BuildContext context,
+    Paciente paciente,
+    int fichaId,
+  ) async {
+    await context.push('/fichas/$fichaId/periodontograma', extra: paciente);
+    if (!context.mounted) {
+      return;
+    }
+    await context.read<FichasProvider>().load(paciente.id);
   }
 }

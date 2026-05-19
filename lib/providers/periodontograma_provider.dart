@@ -33,6 +33,21 @@ class PeriodontogramaProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> loadPorFicha(int fichaId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _periodontograma = await _service.obtenerPorFicha(fichaId);
+    } catch (error) {
+      _errorMessage = apiErrorMessage(error);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<String?> actualizarObservaciones(String value) async {
     final current = _periodontograma;
     if (current == null) {

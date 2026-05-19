@@ -8,6 +8,7 @@ class Periodontograma {
     required this.dientes,
     this.usuarioId,
     this.citaId,
+    this.fichaClinicaId,
     this.observaciones,
   });
 
@@ -17,6 +18,7 @@ class Periodontograma {
       paciente: Paciente.fromJson(json['paciente'] as Map<String, dynamic>),
       usuarioId: json['usuarioId'] as int?,
       citaId: json['citaId'] as int?,
+      fichaClinicaId: json['fichaClinicaId'] as int?,
       observaciones: json['observaciones'] as String?,
       activo: json['activo'] as bool? ?? true,
       dientes: (json['dientes'] as List<dynamic>)
@@ -30,6 +32,7 @@ class Periodontograma {
   final Paciente paciente;
   final int? usuarioId;
   final int? citaId;
+  final int? fichaClinicaId;
   final String? observaciones;
   final bool activo;
   final List<PeriodontogramaDiente> dientes;

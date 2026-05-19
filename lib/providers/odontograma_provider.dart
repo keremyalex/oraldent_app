@@ -12,11 +12,16 @@ class OdontogramaProvider extends ChangeNotifier {
   bool _isSaving = false;
   String? _errorMessage;
   Odontograma? _odontograma;
+  Odontograma? _originalOdontograma;
+  bool _isEditing = false;
+  bool _hasChanges = false;
 
   bool get isLoading => _isLoading;
   bool get isSaving => _isSaving;
   String? get errorMessage => _errorMessage;
   Odontograma? get odontograma => _odontograma;
+  bool get isEditing => _isEditing;
+  bool get hasChanges => _hasChanges;
 
   Future<void> load(int pacienteId) async {
     _isLoading = true;
@@ -25,6 +30,27 @@ class OdontogramaProvider extends ChangeNotifier {
 
     try {
       _odontograma = await _odontogramaService.obtenerPorPaciente(pacienteId);
+      _originalOdontograma = _odontograma;
+      _isEditing = false;
+      _hasChanges = false;
+    } catch (error) {
+      _errorMessage = apiErrorMessage(error);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadPorFicha(int fichaId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _odontograma = await _odontogramaService.obtenerPorFicha(fichaId);
+      _originalOdontograma = _odontograma;
+      _isEditing = false;
+      _hasChanges = false;
     } catch (error) {
       _errorMessage = apiErrorMessage(error);
     } finally {
@@ -58,6 +84,78 @@ class OdontogramaProvider extends ChangeNotifier {
       _isSaving = false;
       notifyListeners();
     }
+  }
+
+  void startEditing() {
+    _originalOdontograma = _odontograma;
+    _isEditing = true;
+    notifyListeners();
+  }
+
+  void discardEditing() {
+    _odontograma = _originalOdontograma ?? _odontograma;
+    _isEditing = false;
+    _hasChanges = false;
+    notifyListeners();
+  }
+
+  void actualizarDienteLocal({
+    required int numeroFdi,
+    required bool ausente,
+    required bool implante,
+    required bool corona,
+    required bool endodoncia,
+    required bool extraccionIndicada,
+    required String? observacion,
+  }) {
+    final current = _odontograma;
+    if (current == null) {
+      return;
+    }
+    _odontograma = current.copyWith(
+      observaciones: current.observaciones,
+      dientes: current.dientes.map((diente) {
+        if (diente.numeroFdi != numeroFdi) {
+          return diente;
+        }
+        return diente.copyWith(
+          ausente: ausente,
+          implante: ausente ? false : implante,
+          corona: ausente ? false : corona,
+          endodoncia: ausente ? false : endodoncia,
+          extraccionIndicada: ausente ? false : extraccionIndicada,
+          observacion: observacion,
+          clearObservacion: observacion == null,
+        );
+      }).toList(),
+    );
+    _hasChanges = true;
+    notifyListeners();
+  }
+
+  void alternarCaraLocal({required int numeroFdi, required String tipo}) {
+    final current = _odontograma;
+    if (current == null) {
+      return;
+    }
+    _odontograma = current.copyWith(
+      observaciones: current.observaciones,
+      dientes: current.dientes.map((diente) {
+        if (diente.numeroFdi != numeroFdi) {
+          return diente;
+        }
+        return diente.copyWith(
+          caras: diente.caras.map((cara) {
+            if (cara.tipo != tipo) {
+              return cara;
+            }
+            return cara.copyWith(color: OdontogramaColor.next(cara.color));
+          }).toList(),
+        );
+      }).toList(),
+    );
+    _hasChanges = true;
+    notifyListeners();
   }
 
   Future<String?> alternarCara({
@@ -103,6 +201,35 @@ class OdontogramaProvider extends ChangeNotifier {
         odontogramaId: current.id,
         observaciones: value.trim().isEmpty ? null : value.trim(),
       );
+      return null;
+    } catch (error) {
+      return apiErrorMessage(error);
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> guardarOdontograma(String observaciones) async {
+    final current = _odontograma;
+    if (current == null) {
+      return 'No hay odontograma cargado.';
+    }
+
+    _isSaving = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _odontograma = await _odontogramaService.actualizarCompleto(
+        odontograma: current,
+        observaciones: observaciones.trim().isEmpty
+            ? null
+            : observaciones.trim(),
+      );
+      _originalOdontograma = _odontograma;
+      _isEditing = false;
+      _hasChanges = false;
       return null;
     } catch (error) {
       return apiErrorMessage(error);

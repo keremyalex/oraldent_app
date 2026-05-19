@@ -163,14 +163,6 @@ class _PacientesScreenState extends State<PacientesScreen> {
                           '/pacientes/${pacientes[index].id}',
                           extra: pacientes[index],
                         ),
-                        onOdontogramaTap: () => context.push(
-                          '/pacientes/${pacientes[index].id}/odontograma',
-                          extra: pacientes[index],
-                        ),
-                        onPeriodontogramaTap: () => context.push(
-                          '/pacientes/${pacientes[index].id}/periodontograma',
-                          extra: pacientes[index],
-                        ),
                       );
                     },
                   ),

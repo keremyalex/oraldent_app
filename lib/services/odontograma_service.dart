@@ -8,7 +8,6 @@ class OdontogramaDienteRequest {
     required this.corona,
     required this.endodoncia,
     required this.extraccionIndicada,
-    this.movilidad,
     this.observacion,
   });
 
@@ -17,7 +16,6 @@ class OdontogramaDienteRequest {
   final bool corona;
   final bool endodoncia;
   final bool extraccionIndicada;
-  final int? movilidad;
   final String? observacion;
 
   Map<String, dynamic> toJson() {
@@ -27,7 +25,6 @@ class OdontogramaDienteRequest {
       'corona': corona,
       'endodoncia': endodoncia,
       'extraccionIndicada': extraccionIndicada,
-      'movilidad': movilidad,
       'observacion': observacion,
     };
   }
@@ -45,6 +42,13 @@ class OdontogramaService {
     return Odontograma.fromJson(response.data!);
   }
 
+  Future<Odontograma> obtenerPorFicha(int fichaId) async {
+    final response = await _apiClient.dio.get<Map<String, dynamic>>(
+      '/api/fichas/$fichaId/odontograma',
+    );
+    return Odontograma.fromJson(response.data!);
+  }
+
   Future<Odontograma> actualizarObservaciones({
     required int odontogramaId,
     required String? observaciones,
@@ -52,6 +56,37 @@ class OdontogramaService {
     final response = await _apiClient.dio.put<Map<String, dynamic>>(
       '/api/odontogramas/$odontogramaId/observaciones',
       data: {'observaciones': observaciones},
+    );
+    return Odontograma.fromJson(response.data!);
+  }
+
+  Future<Odontograma> actualizarCompleto({
+    required Odontograma odontograma,
+    required String? observaciones,
+  }) async {
+    final response = await _apiClient.dio.put<Map<String, dynamic>>(
+      '/api/odontogramas/${odontograma.id}',
+      data: {
+        'observaciones': observaciones,
+        'dientes': odontograma.dientes.map((diente) {
+          return {
+            'numeroFdi': diente.numeroFdi,
+            'ausente': diente.ausente,
+            'implante': diente.implante,
+            'corona': diente.corona,
+            'endodoncia': diente.endodoncia,
+            'extraccionIndicada': diente.extraccionIndicada,
+            'observacion': diente.observacion,
+            'caras': diente.caras.map((cara) {
+              return {
+                'tipo': cara.tipo,
+                'color': cara.color,
+                'descripcion': cara.descripcion,
+              };
+            }).toList(),
+          };
+        }).toList(),
+      },
     );
     return Odontograma.fromJson(response.data!);
   }

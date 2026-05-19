@@ -9,6 +9,7 @@ class Odontograma {
     required this.dientes,
     this.usuarioId,
     this.citaId,
+    this.fichaClinicaId,
     this.observaciones,
   });
 
@@ -18,6 +19,7 @@ class Odontograma {
       paciente: Paciente.fromJson(json['paciente'] as Map<String, dynamic>),
       usuarioId: json['usuarioId'] as int?,
       citaId: json['citaId'] as int?,
+      fichaClinicaId: json['fichaClinicaId'] as int?,
       observaciones: json['observaciones'] as String?,
       activo: json['activo'] as bool? ?? true,
       dientes: (json['dientes'] as List<dynamic>)
@@ -31,9 +33,26 @@ class Odontograma {
   final Paciente paciente;
   final int? usuarioId;
   final int? citaId;
+  final int? fichaClinicaId;
   final String? observaciones;
   final bool activo;
   final List<OdontogramaDiente> dientes;
+
+  Odontograma copyWith({
+    String? observaciones,
+    List<OdontogramaDiente>? dientes,
+  }) {
+    return Odontograma(
+      id: id,
+      paciente: paciente,
+      usuarioId: usuarioId,
+      citaId: citaId,
+      fichaClinicaId: fichaClinicaId,
+      observaciones: observaciones,
+      activo: activo,
+      dientes: dientes ?? this.dientes,
+    );
+  }
 
   OdontogramaDiente? dientePorFdi(int numeroFdi) {
     for (final diente in dientes) {
@@ -61,7 +80,6 @@ class OdontogramaDiente {
     required this.endodoncia,
     required this.extraccionIndicada,
     required this.caras,
-    this.movilidad,
     this.observacion,
   });
 
@@ -76,7 +94,6 @@ class OdontogramaDiente {
       corona: json['corona'] as bool? ?? false,
       endodoncia: json['endodoncia'] as bool? ?? false,
       extraccionIndicada: json['extraccionIndicada'] as bool? ?? false,
-      movilidad: json['movilidad'] as int?,
       observacion: json['observacion'] as String?,
       caras: (json['caras'] as List<dynamic>)
           .cast<Map<String, dynamic>>()
@@ -94,9 +111,33 @@ class OdontogramaDiente {
   final bool corona;
   final bool endodoncia;
   final bool extraccionIndicada;
-  final int? movilidad;
   final String? observacion;
   final List<OdontogramaCara> caras;
+
+  OdontogramaDiente copyWith({
+    bool? ausente,
+    bool? implante,
+    bool? corona,
+    bool? endodoncia,
+    bool? extraccionIndicada,
+    String? observacion,
+    List<OdontogramaCara>? caras,
+    bool clearObservacion = false,
+  }) {
+    return OdontogramaDiente(
+      id: id,
+      numeroFdi: numeroFdi,
+      cuadrante: cuadrante,
+      posicion: posicion,
+      ausente: ausente ?? this.ausente,
+      implante: implante ?? this.implante,
+      corona: corona ?? this.corona,
+      endodoncia: endodoncia ?? this.endodoncia,
+      extraccionIndicada: extraccionIndicada ?? this.extraccionIndicada,
+      observacion: clearObservacion ? null : observacion ?? this.observacion,
+      caras: caras ?? this.caras,
+    );
+  }
 
   bool get tieneHallazgos {
     return ausente ||
@@ -104,7 +145,6 @@ class OdontogramaDiente {
         corona ||
         endodoncia ||
         extraccionIndicada ||
-        movilidad != null ||
         (observacion != null && observacion!.isNotEmpty) ||
         caras.any((cara) => cara.color != OdontogramaColor.ninguno);
   }
@@ -139,6 +179,19 @@ class OdontogramaCara {
   final String tipo;
   final String color;
   final String? descripcion;
+
+  OdontogramaCara copyWith({
+    String? color,
+    String? descripcion,
+    bool clearDescripcion = false,
+  }) {
+    return OdontogramaCara(
+      id: id,
+      tipo: tipo,
+      color: color ?? this.color,
+      descripcion: clearDescripcion ? null : descripcion ?? this.descripcion,
+    );
+  }
 }
 
 class OdontogramaColor {

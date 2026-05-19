@@ -68,6 +68,13 @@ class PeriodontogramaService {
     return Periodontograma.fromJson(response.data!);
   }
 
+  Future<Periodontograma> obtenerPorFicha(int fichaId) async {
+    final response = await _apiClient.dio.get<Map<String, dynamic>>(
+      '/api/fichas/$fichaId/periodontograma',
+    );
+    return Periodontograma.fromJson(response.data!);
+  }
+
   Future<Periodontograma> actualizarObservaciones({
     required int periodontogramaId,
     required String? observaciones,

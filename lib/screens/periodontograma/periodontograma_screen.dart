@@ -14,11 +14,13 @@ import 'package:provider/provider.dart';
 class PeriodontogramaScreen extends StatefulWidget {
   const PeriodontogramaScreen({
     required this.pacienteId,
+    this.fichaId,
     this.paciente,
     super.key,
   });
 
   final int pacienteId;
+  final int? fichaId;
   final Paciente? paciente;
 
   @override
@@ -39,7 +41,7 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
     _loaded = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<PeriodontogramaProvider>().load(widget.pacienteId);
+        _loadPeriodontograma(context);
       }
     });
   }
@@ -74,16 +76,15 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
           paciente: paciente,
           isLoading: provider.isLoading,
           onBack: () => _goBack(context),
-          onRefresh: () =>
-              context.read<PeriodontogramaProvider>().load(widget.pacienteId),
+          onRefresh: () => _loadPeriodontograma(context),
         ),
         body: SafeArea(
           child: _PeriodontogramaBody(
-            pacienteId: widget.pacienteId,
             provider: provider,
             observacionesController: _observacionesController,
             onOpenDiente: _openDienteSheet,
             onSaveObservaciones: () => _saveObservaciones(context),
+            onRetry: () => _loadPeriodontograma(context),
           ),
         ),
       ),
@@ -96,6 +97,15 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
       return;
     }
     context.go('/pacientes');
+  }
+
+  void _loadPeriodontograma(BuildContext context) {
+    final fichaId = widget.fichaId;
+    if (fichaId == null) {
+      context.read<PeriodontogramaProvider>().load(widget.pacienteId);
+      return;
+    }
+    context.read<PeriodontogramaProvider>().loadPorFicha(fichaId);
   }
 
   Future<void> _saveObservaciones(BuildContext context) async {
@@ -200,18 +210,18 @@ class _PeriodontogramaAppBar extends StatelessWidget
 
 class _PeriodontogramaBody extends StatelessWidget {
   const _PeriodontogramaBody({
-    required this.pacienteId,
     required this.provider,
     required this.observacionesController,
     required this.onOpenDiente,
     required this.onSaveObservaciones,
+    required this.onRetry,
   });
 
-  final int pacienteId;
   final PeriodontogramaProvider provider;
   final TextEditingController observacionesController;
   final ValueChanged<PeriodontogramaDiente> onOpenDiente;
   final VoidCallback onSaveObservaciones;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -225,8 +235,7 @@ class _PeriodontogramaBody extends StatelessWidget {
         title: 'No se pudo cargar el periodontograma',
         message: provider.errorMessage!,
         actionLabel: 'Reintentar',
-        onAction: () =>
-            context.read<PeriodontogramaProvider>().load(pacienteId),
+        onAction: onRetry,
       );
     }
     if (periodontograma == null) {

@@ -7,6 +7,7 @@ import 'package:odontologia_app/screens/dashboard/dashboard_screen.dart';
 import 'package:odontologia_app/screens/home/home_screen.dart';
 import 'package:odontologia_app/screens/login/login_screen.dart';
 import 'package:odontologia_app/screens/odontograma/odontograma_screen.dart';
+import 'package:odontologia_app/screens/pacientes/ficha_detalle_screen.dart';
 import 'package:odontologia_app/screens/pacientes/paciente_detalle_screen.dart';
 import 'package:odontologia_app/screens/pacientes/pacientes_screen.dart';
 import 'package:odontologia_app/screens/periodontograma/periodontograma_screen.dart';
@@ -74,12 +75,50 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         },
       ),
       GoRoute(
+        path: '/fichas/:fichaId',
+        builder: (context, state) {
+          final fichaId = int.parse(state.pathParameters['fichaId']!);
+          return FichaDetalleScreen(
+            fichaId: fichaId,
+            paciente: state.extra is Paciente ? state.extra as Paciente : null,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/fichas/:fichaId/odontograma',
+        builder: (context, state) {
+          final fichaId = int.parse(state.pathParameters['fichaId']!);
+          final paciente = state.extra is Paciente
+              ? state.extra as Paciente
+              : null;
+          return OdontogramaScreen(
+            pacienteId: paciente?.id ?? 0,
+            fichaId: fichaId,
+            paciente: paciente,
+          );
+        },
+      ),
+      GoRoute(
         path: '/pacientes/:pacienteId/periodontograma',
         builder: (context, state) {
           final pacienteId = int.parse(state.pathParameters['pacienteId']!);
           return PeriodontogramaScreen(
             pacienteId: pacienteId,
             paciente: state.extra is Paciente ? state.extra as Paciente : null,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/fichas/:fichaId/periodontograma',
+        builder: (context, state) {
+          final fichaId = int.parse(state.pathParameters['fichaId']!);
+          final paciente = state.extra is Paciente
+              ? state.extra as Paciente
+              : null;
+          return PeriodontogramaScreen(
+            pacienteId: paciente?.id ?? 0,
+            fichaId: fichaId,
+            paciente: paciente,
           );
         },
       ),
