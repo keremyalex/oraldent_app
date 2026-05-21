@@ -28,6 +28,8 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
   final _observacionesController = TextEditingController();
   bool _loaded = false;
   String? _lastObservaciones;
+  int? _selectedToothFdi;
+  PeriodontogramaSitioGrupo? _selectedGroup;
 
   @override
   void didChangeDependencies() {
@@ -79,8 +81,11 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
           child: _PeriodontogramaBody(
             provider: provider,
             observacionesController: _observacionesController,
+            selectedToothFdi: _selectedToothFdi,
+            selectedGroup: _selectedGroup,
             onOpenDiente: _openDienteSheet,
             onOpenSitios: _openSitiosSheet,
+            onSelectCara: _selectCara,
             onSaveObservaciones: () => _saveObservaciones(context),
             onRetry: () => _loadPeriodontograma(context),
           ),
@@ -99,6 +104,16 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
 
   void _loadPeriodontograma(BuildContext context) {
     context.read<PeriodontogramaProvider>().loadPorFicha(widget.fichaId);
+  }
+
+  void _selectCara(
+    PeriodontogramaDiente diente,
+    PeriodontogramaSitioGrupo grupo,
+  ) {
+    setState(() {
+      _selectedToothFdi = diente.numeroFdi;
+      _selectedGroup = grupo;
+    });
   }
 
   Future<void> _saveObservaciones(BuildContext context) async {
@@ -229,20 +244,30 @@ class _PeriodontogramaBody extends StatelessWidget {
   const _PeriodontogramaBody({
     required this.provider,
     required this.observacionesController,
+    required this.selectedToothFdi,
+    required this.selectedGroup,
     required this.onOpenDiente,
     required this.onOpenSitios,
+    required this.onSelectCara,
     required this.onSaveObservaciones,
     required this.onRetry,
   });
 
   final PeriodontogramaProvider provider;
   final TextEditingController observacionesController;
+  final int? selectedToothFdi;
+  final PeriodontogramaSitioGrupo? selectedGroup;
   final ValueChanged<PeriodontogramaDiente> onOpenDiente;
   final void Function(
     PeriodontogramaDiente diente,
     PeriodontogramaSitioGrupo grupo,
   )
   onOpenSitios;
+  final void Function(
+    PeriodontogramaDiente diente,
+    PeriodontogramaSitioGrupo grupo,
+  )
+  onSelectCara;
   final VoidCallback onSaveObservaciones;
   final VoidCallback onRetry;
 
@@ -268,12 +293,19 @@ class _PeriodontogramaBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 24),
       children: [
-        PeriodontogramaSummaryBand(periodontograma: periodontograma),
-        const SizedBox(height: 16),
+        if (selectedToothFdi != null && selectedGroup != null) ...[
+          PeriodontogramaSummaryBand(
+            periodontograma: periodontograma,
+            dienteSeleccionado: periodontograma.dientePorFdi(selectedToothFdi!),
+            grupoSeleccionado: selectedGroup,
+          ),
+          const SizedBox(height: 16),
+        ],
         PeriodontogramaChartSection(
           periodontograma: periodontograma,
           onDienteTap: onOpenDiente,
           onSitiosTap: onOpenSitios,
+          onCaraTap: onSelectCara,
         ),
         const SizedBox(height: 18),
         TextField(

@@ -7,6 +7,7 @@ class PeriodontogramaChartSection extends StatelessWidget {
     required this.periodontograma,
     required this.onDienteTap,
     required this.onSitiosTap,
+    required this.onCaraTap,
     super.key,
   });
 
@@ -17,6 +18,11 @@ class PeriodontogramaChartSection extends StatelessWidget {
     PeriodontogramaSitioGrupo grupo,
   )
   onSitiosTap;
+  final void Function(
+    PeriodontogramaDiente diente,
+    PeriodontogramaSitioGrupo grupo,
+  )
+  onCaraTap;
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +82,7 @@ class PeriodontogramaChartSection extends StatelessWidget {
                       painter: _PeriodontalChartPainter(periodontograma),
                     ),
                   ),
+                  ..._faceTapAreas(periodontograma),
                   ..._toothControls(periodontograma),
                 ],
               ),
@@ -153,6 +160,44 @@ class PeriodontogramaChartSection extends StatelessWidget {
     ];
   }
 
+  List<Widget> _faceTapAreas(Periodontograma periodontograma) {
+    return [
+      for (final diente in periodontograma.dientes) ...[
+        if (diente.numeroFdi >= 11 && diente.numeroFdi <= 28) ...[
+          _ToothFaceTapArea(
+            diente: diente,
+            grupo: PeriodontogramaSitioGrupo.vestibular,
+            x: _controlX(diente.numeroFdi),
+            top: 0,
+            onTap: onCaraTap,
+          ),
+          _ToothFaceTapArea(
+            diente: diente,
+            grupo: PeriodontogramaSitioGrupo.palatinaLingual,
+            x: _controlX(diente.numeroFdi),
+            top: 240,
+            onTap: onCaraTap,
+          ),
+        ] else ...[
+          _ToothFaceTapArea(
+            diente: diente,
+            grupo: PeriodontogramaSitioGrupo.palatinaLingual,
+            x: _controlX(diente.numeroFdi),
+            top: 470,
+            onTap: onCaraTap,
+          ),
+          _ToothFaceTapArea(
+            diente: diente,
+            grupo: PeriodontogramaSitioGrupo.vestibular,
+            x: _controlX(diente.numeroFdi),
+            top: 710,
+            onTap: onCaraTap,
+          ),
+        ],
+      ],
+    ];
+  }
+
   List<Widget> _implantOverlays(Periodontograma periodontograma) {
     return [
       for (final diente in periodontograma.dientes)
@@ -200,6 +245,47 @@ class PeriodontogramaChartSection extends StatelessWidget {
         _implantCoordinates['${tooth}p']?.$1 ??
         _implantCoordinates['${tooth}l']?.$1;
     return ((buccal ?? oral ?? 0) + (oral ?? buccal ?? 0)) / 2;
+  }
+}
+
+class _ToothFaceTapArea extends StatelessWidget {
+  const _ToothFaceTapArea({
+    required this.diente,
+    required this.grupo,
+    required this.x,
+    required this.top,
+    required this.onTap,
+  });
+
+  final PeriodontogramaDiente diente;
+  final PeriodontogramaSitioGrupo grupo;
+  final double x;
+  final double top;
+  final void Function(
+    PeriodontogramaDiente diente,
+    PeriodontogramaSitioGrupo grupo,
+  )
+  onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: x - 27,
+      top: top + 6,
+      width: 54,
+      height: 150,
+      child: Semantics(
+        button: true,
+        label: 'Ver ${grupo.titulo} del diente ${diente.numeroFdi}',
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => onTap(diente, grupo),
+          ),
+        ),
+      ),
+    );
   }
 }
 
