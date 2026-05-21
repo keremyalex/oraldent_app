@@ -1,30 +1,56 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:odontologia_app/main.dart';
+import 'package:odontologia_app/models/odontograma.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('parsea odontograma y detecta hallazgos', () {
+    final odontograma = Odontograma.fromJson({
+      'id': 1,
+      'paciente': {
+        'id': 10,
+        'nombre': 'Maria',
+        'apellidoPaterno': 'Rojas',
+        'apellidoMaterno': null,
+        'celular': '70010001',
+        'documentoIdentidad': null,
+        'correo': null,
+        'fechaNacimiento': null,
+        'direccion': null,
+        'fotoUrl': null,
+      },
+      'usuarioId': 2,
+      'citaId': null,
+      'observaciones': 'Valoracion inicial',
+      'activo': true,
+      'dientes': [
+        {
+          'id': 100,
+          'numeroFdi': 16,
+          'cuadrante': 1,
+          'posicion': 6,
+          'ausente': false,
+          'implante': false,
+          'corona': false,
+          'endodoncia': false,
+          'extraccionIndicada': false,
+          'movilidad': null,
+          'observacion': null,
+          'caras': [
+            {
+              'id': 1000,
+              'tipo': OdontogramaCaraTipo.mesial,
+              'color': OdontogramaColor.rojo,
+              'descripcion': 'Caries proximal',
+            },
+          ],
+        },
+      ],
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(odontograma.paciente.nombreCompleto, 'Maria Rojas');
+    expect(odontograma.hallazgos, 1);
+    expect(
+      odontograma.dientePorFdi(16)?.cara(OdontogramaCaraTipo.mesial).color,
+      OdontogramaColor.rojo,
+    );
   });
 }

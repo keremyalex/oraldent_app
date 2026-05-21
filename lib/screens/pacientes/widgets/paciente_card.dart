@@ -3,11 +3,7 @@ import 'package:odontologia_app/models/paciente.dart';
 import 'package:odontologia_app/theme/app_colors.dart';
 
 class PacienteCard extends StatelessWidget {
-  const PacienteCard({
-    required this.paciente,
-    required this.onTap,
-    super.key,
-  });
+  const PacienteCard({required this.paciente, required this.onTap, super.key});
 
   final Paciente paciente;
   final VoidCallback onTap;
@@ -96,11 +92,6 @@ class PacienteCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 6),
-              Icon(
-                Icons.edit_rounded,
-                color: AppColors.secondary.withValues(alpha: 0.7),
-              ),
             ],
           ),
         ),
@@ -110,9 +101,7 @@ class PacienteCard extends StatelessWidget {
 }
 
 class _PatientAvatar extends StatelessWidget {
-  const _PatientAvatar({
-    required this.paciente,
-  });
+  const _PatientAvatar({required this.paciente});
 
   final Paciente paciente;
 
@@ -133,9 +122,9 @@ class _PatientAvatar extends StatelessWidget {
               child: Text(
                 paciente.initials,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             )
           : Image.network(
@@ -146,9 +135,9 @@ class _PatientAvatar extends StatelessWidget {
                   child: Text(
                     paciente.initials,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w800,
-                        ),
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 );
               },
@@ -171,19 +160,16 @@ class _StatusChip extends StatelessWidget {
       child: Text(
         'Activo',
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: const Color(0xFF00786B),
-              fontSize: 11,
-            ),
+          color: const Color(0xFF00786B),
+          fontSize: 11,
+        ),
       ),
     );
   }
 }
 
 class _InfoPill extends StatelessWidget {
-  const _InfoPill({
-    required this.icon,
-    required this.text,
-  });
+  const _InfoPill({required this.icon, required this.text});
 
   final IconData icon;
   final String text;
@@ -200,10 +186,10 @@ class _InfoPill extends StatelessWidget {
             text,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppColors.secondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
+              color: AppColors.secondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],

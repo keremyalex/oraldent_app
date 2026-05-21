@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:odontologia_app/providers/auth_provider.dart';
+import 'package:odontologia_app/models/paciente.dart';
 import 'package:odontologia_app/screens/citas/citas_screen.dart';
 import 'package:odontologia_app/screens/dashboard/dashboard_screen.dart';
 import 'package:odontologia_app/screens/home/home_screen.dart';
 import 'package:odontologia_app/screens/login/login_screen.dart';
+import 'package:odontologia_app/screens/odontograma/odontograma_screen.dart';
+import 'package:odontologia_app/screens/pacientes/ficha_detalle_screen.dart';
+import 'package:odontologia_app/screens/pacientes/paciente_detalle_screen.dart';
 import 'package:odontologia_app/screens/pacientes/pacientes_screen.dart';
+import 'package:odontologia_app/screens/periodontograma/periodontograma_screen.dart';
 import 'package:odontologia_app/screens/settings/schedule_settings_screen.dart';
 import 'package:odontologia_app/screens/settings/services_settings_screen.dart';
 import 'package:odontologia_app/screens/settings/settings_screen.dart';
@@ -38,25 +43,56 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const HomeScreen(),
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/dashboard',
         builder: (context, state) => const DashboardScreen(),
       ),
-      GoRoute(
-        path: '/citas',
-        builder: (context, state) => const CitasScreen(),
-      ),
+      GoRoute(path: '/citas', builder: (context, state) => const CitasScreen()),
       GoRoute(
         path: '/pacientes',
         builder: (context, state) => const PacientesScreen(),
+      ),
+      GoRoute(
+        path: '/pacientes/:pacienteId',
+        builder: (context, state) {
+          final pacienteId = int.parse(state.pathParameters['pacienteId']!);
+          return PacienteDetalleScreen(
+            pacienteId: pacienteId,
+            paciente: state.extra is Paciente ? state.extra as Paciente : null,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/fichas/:fichaId',
+        builder: (context, state) {
+          final fichaId = int.parse(state.pathParameters['fichaId']!);
+          return FichaDetalleScreen(
+            fichaId: fichaId,
+            paciente: state.extra is Paciente ? state.extra as Paciente : null,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/fichas/:fichaId/odontograma',
+        builder: (context, state) {
+          final fichaId = int.parse(state.pathParameters['fichaId']!);
+          final paciente = state.extra is Paciente
+              ? state.extra as Paciente
+              : null;
+          return OdontogramaScreen(fichaId: fichaId, paciente: paciente);
+        },
+      ),
+      GoRoute(
+        path: '/fichas/:fichaId/periodontograma',
+        builder: (context, state) {
+          final fichaId = int.parse(state.pathParameters['fichaId']!);
+          final paciente = state.extra is Paciente
+              ? state.extra as Paciente
+              : null;
+          return PeriodontogramaScreen(fichaId: fichaId, paciente: paciente);
+        },
       ),
       GoRoute(
         path: '/ajustes',
@@ -79,8 +115,6 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

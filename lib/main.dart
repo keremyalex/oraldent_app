@@ -5,14 +5,20 @@ import 'package:odontologia_app/core/api_client.dart';
 import 'package:odontologia_app/providers/auth_provider.dart';
 import 'package:odontologia_app/providers/citas_provider.dart';
 import 'package:odontologia_app/providers/dashboard_provider.dart';
+import 'package:odontologia_app/providers/fichas_provider.dart';
 import 'package:odontologia_app/providers/horarios_provider.dart';
+import 'package:odontologia_app/providers/odontograma_provider.dart';
+import 'package:odontologia_app/providers/periodontograma_provider.dart';
 import 'package:odontologia_app/providers/pacientes_provider.dart';
 import 'package:odontologia_app/providers/servicios_provider.dart';
 import 'package:odontologia_app/router/app_router.dart';
 import 'package:odontologia_app/services/auth_service.dart';
 import 'package:odontologia_app/services/citas_service.dart';
 import 'package:odontologia_app/services/dashboard_service.dart';
+import 'package:odontologia_app/services/fichas_service.dart';
 import 'package:odontologia_app/services/horarios_service.dart';
+import 'package:odontologia_app/services/odontograma_service.dart';
+import 'package:odontologia_app/services/periodontograma_service.dart';
 import 'package:odontologia_app/services/pacientes_service.dart';
 import 'package:odontologia_app/services/session_storage.dart';
 import 'package:odontologia_app/services/servicios_service.dart';
@@ -42,6 +48,16 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => PacientesProvider(PacientesService(apiClient)),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => FichasProvider(FichasService(apiClient)),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => OdontogramaProvider(OdontogramaService(apiClient)),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              PeriodontogramaProvider(PeriodontogramaService(apiClient)),
         ),
         ChangeNotifierProvider(
           create: (_) => HorariosProvider(HorariosService(apiClient)),

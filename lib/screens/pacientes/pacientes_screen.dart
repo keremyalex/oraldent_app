@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:odontologia_app/models/paciente.dart';
 import 'package:odontologia_app/providers/auth_provider.dart';
 import 'package:odontologia_app/providers/pacientes_provider.dart';
@@ -80,9 +81,9 @@ class _PacientesScreenState extends State<PacientesScreen> {
                           : IconButton(
                               onPressed: () {
                                 _searchController.clear();
-                                context
-                                    .read<PacientesProvider>()
-                                    .updateQuery('');
+                                context.read<PacientesProvider>().updateQuery(
+                                  '',
+                                );
                               },
                               icon: const Icon(Icons.close_rounded),
                             ),
@@ -110,8 +111,9 @@ class _PacientesScreenState extends State<PacientesScreen> {
                         icon: const Icon(Icons.refresh_rounded),
                         color: AppColors.primary,
                         style: IconButton.styleFrom(
-                          backgroundColor:
-                              AppColors.primary.withValues(alpha: 0.08),
+                          backgroundColor: AppColors.primary.withValues(
+                            alpha: 0.08,
+                          ),
                         ),
                       ),
                     ],
@@ -157,9 +159,9 @@ class _PacientesScreenState extends State<PacientesScreen> {
                     itemBuilder: (context, index) {
                       return PacienteCard(
                         paciente: pacientes[index],
-                        onTap: () => _openPacienteForm(
-                          context,
-                          pacientes[index],
+                        onTap: () => context.push(
+                          '/pacientes/${pacientes[index].id}',
+                          extra: pacientes[index],
                         ),
                       );
                     },
