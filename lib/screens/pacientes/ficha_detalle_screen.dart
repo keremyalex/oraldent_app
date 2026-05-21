@@ -458,7 +458,7 @@ class _SectionCard extends StatelessWidget {
             fontWeight: FontWeight.w800,
           ),
         ),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
         children: [
           for (final child in children) ...[child, const SizedBox(height: 12)],
         ],
