@@ -6,21 +6,18 @@ import 'package:odontologia_app/providers/periodontograma_provider.dart';
 import 'package:odontologia_app/screens/periodontograma/widgets/periodontograma_chart_section.dart';
 import 'package:odontologia_app/screens/periodontograma/widgets/periodontograma_diente_sheet.dart';
 import 'package:odontologia_app/screens/periodontograma/widgets/periodontograma_message.dart';
-import 'package:odontologia_app/screens/periodontograma/widgets/periodontograma_quadrant_section.dart';
 import 'package:odontologia_app/screens/periodontograma/widgets/periodontograma_summary_band.dart';
 import 'package:odontologia_app/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 
 class PeriodontogramaScreen extends StatefulWidget {
   const PeriodontogramaScreen({
-    required this.pacienteId,
-    this.fichaId,
+    required this.fichaId,
     this.paciente,
     super.key,
   });
 
-  final int pacienteId;
-  final int? fichaId;
+  final int fichaId;
   final Paciente? paciente;
 
   @override
@@ -83,6 +80,7 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
             provider: provider,
             observacionesController: _observacionesController,
             onOpenDiente: _openDienteSheet,
+            onOpenSitios: _openSitiosSheet,
             onSaveObservaciones: () => _saveObservaciones(context),
             onRetry: () => _loadPeriodontograma(context),
           ),
@@ -100,12 +98,7 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
   }
 
   void _loadPeriodontograma(BuildContext context) {
-    final fichaId = widget.fichaId;
-    if (fichaId == null) {
-      context.read<PeriodontogramaProvider>().load(widget.pacienteId);
-      return;
-    }
-    context.read<PeriodontogramaProvider>().loadPorFicha(fichaId);
+    context.read<PeriodontogramaProvider>().loadPorFicha(widget.fichaId);
   }
 
   Future<void> _saveObservaciones(BuildContext context) async {
@@ -135,7 +128,31 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
       builder: (_) {
         return ChangeNotifierProvider.value(
           value: context.read<PeriodontogramaProvider>(),
-          child: PeriodontogramaDienteSheet(diente: diente),
+          child: PeriodontogramaDienteSheet.general(diente: diente),
+        );
+      },
+    );
+  }
+
+  Future<void> _openSitiosSheet(
+    PeriodontogramaDiente diente,
+    PeriodontogramaSitioGrupo grupo,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        return ChangeNotifierProvider.value(
+          value: context.read<PeriodontogramaProvider>(),
+          child: PeriodontogramaDienteSheet.sitios(
+            diente: diente,
+            grupo: grupo,
+          ),
         );
       },
     );
@@ -213,6 +230,7 @@ class _PeriodontogramaBody extends StatelessWidget {
     required this.provider,
     required this.observacionesController,
     required this.onOpenDiente,
+    required this.onOpenSitios,
     required this.onSaveObservaciones,
     required this.onRetry,
   });
@@ -220,6 +238,11 @@ class _PeriodontogramaBody extends StatelessWidget {
   final PeriodontogramaProvider provider;
   final TextEditingController observacionesController;
   final ValueChanged<PeriodontogramaDiente> onOpenDiente;
+  final void Function(
+    PeriodontogramaDiente diente,
+    PeriodontogramaSitioGrupo grupo,
+  )
+  onOpenSitios;
   final VoidCallback onSaveObservaciones;
   final VoidCallback onRetry;
 
@@ -247,42 +270,10 @@ class _PeriodontogramaBody extends StatelessWidget {
       children: [
         PeriodontogramaSummaryBand(periodontograma: periodontograma),
         const SizedBox(height: 16),
-        PeriodontogramaChartSection(periodontograma: periodontograma),
-        const SizedBox(height: 16),
-        PeriodontogramaQuadrantSection(
-          title: 'Cuadrante 1',
-          subtitle: 'Superior derecho',
-          numbers: const [18, 17, 16, 15, 14, 13, 12, 11],
-          tabla: 1,
+        PeriodontogramaChartSection(
           periodontograma: periodontograma,
           onDienteTap: onOpenDiente,
-        ),
-        const SizedBox(height: 14),
-        PeriodontogramaQuadrantSection(
-          title: 'Cuadrante 2',
-          subtitle: 'Superior izquierdo',
-          numbers: const [21, 22, 23, 24, 25, 26, 27, 28],
-          tabla: 2,
-          periodontograma: periodontograma,
-          onDienteTap: onOpenDiente,
-        ),
-        const SizedBox(height: 14),
-        PeriodontogramaQuadrantSection(
-          title: 'Cuadrante 4',
-          subtitle: 'Inferior derecho',
-          numbers: const [48, 47, 46, 45, 44, 43, 42, 41],
-          tabla: 5,
-          periodontograma: periodontograma,
-          onDienteTap: onOpenDiente,
-        ),
-        const SizedBox(height: 14),
-        PeriodontogramaQuadrantSection(
-          title: 'Cuadrante 3',
-          subtitle: 'Inferior izquierdo',
-          numbers: const [31, 32, 33, 34, 35, 36, 37, 38],
-          tabla: 6,
-          periodontograma: periodontograma,
-          onDienteTap: onOpenDiente,
+          onSitiosTap: onOpenSitios,
         ),
         const SizedBox(height: 18),
         TextField(

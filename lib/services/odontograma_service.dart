@@ -35,13 +35,6 @@ class OdontogramaService {
 
   final ApiClient _apiClient;
 
-  Future<Odontograma> obtenerPorPaciente(int pacienteId) async {
-    final response = await _apiClient.dio.get<Map<String, dynamic>>(
-      '/api/pacientes/$pacienteId/odontograma',
-    );
-    return Odontograma.fromJson(response.data!);
-  }
-
   Future<Odontograma> obtenerPorFicha(int fichaId) async {
     final response = await _apiClient.dio.get<Map<String, dynamic>>(
       '/api/fichas/$fichaId/odontograma',

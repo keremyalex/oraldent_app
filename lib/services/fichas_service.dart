@@ -15,16 +15,6 @@ class FichaClinicaRequest {
     this.motivoConsulta,
     this.enfermedadActual,
     this.anamnesis,
-    this.hemorragia,
-    this.diabetes,
-    this.hipertension,
-    this.epilepsia,
-    this.problemasCardiovasculares,
-    this.lipotimias,
-    this.tratamientoMedicoActual,
-    this.alergias,
-    this.medicamentoActual,
-    this.otrasPatologias,
     this.examenClinico,
     this.examenRadiografico,
     this.diagnostico,
@@ -44,17 +34,7 @@ class FichaClinicaRequest {
   final int? pulso;
   final String? motivoConsulta;
   final String? enfermedadActual;
-  final String? anamnesis;
-  final bool? hemorragia;
-  final bool? diabetes;
-  final bool? hipertension;
-  final bool? epilepsia;
-  final bool? problemasCardiovasculares;
-  final bool? lipotimias;
-  final bool? tratamientoMedicoActual;
-  final String? alergias;
-  final String? medicamentoActual;
-  final String? otrasPatologias;
+  final FichaAnamnesisRequest? anamnesis;
   final String? examenClinico;
   final String? examenRadiografico;
   final String? diagnostico;
@@ -75,7 +55,47 @@ class FichaClinicaRequest {
       'pulso': pulso,
       'motivoConsulta': motivoConsulta,
       'enfermedadActual': enfermedadActual,
-      'anamnesis': anamnesis,
+      'anamnesis': anamnesis?.toJson(),
+      'examenClinico': examenClinico,
+      'examenRadiografico': examenRadiografico,
+      'diagnostico': diagnostico,
+      'tratamiento': tratamiento,
+      'tecnicaAnestesia': tecnicaAnestesia,
+      'evolucion': evolucion,
+    };
+  }
+}
+
+class FichaAnamnesisRequest {
+  const FichaAnamnesisRequest({
+    this.descripcion,
+    this.hemorragia,
+    this.diabetes,
+    this.hipertension,
+    this.epilepsia,
+    this.problemasCardiovasculares,
+    this.lipotimias,
+    this.tratamientoMedicoActual,
+    this.alergias,
+    this.medicamentoActual,
+    this.otrasPatologias,
+  });
+
+  final String? descripcion;
+  final bool? hemorragia;
+  final bool? diabetes;
+  final bool? hipertension;
+  final bool? epilepsia;
+  final bool? problemasCardiovasculares;
+  final bool? lipotimias;
+  final bool? tratamientoMedicoActual;
+  final String? alergias;
+  final String? medicamentoActual;
+  final String? otrasPatologias;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'descripcion': descripcion,
       'hemorragia': hemorragia,
       'diabetes': diabetes,
       'hipertension': hipertension,
@@ -86,12 +106,6 @@ class FichaClinicaRequest {
       'alergias': alergias,
       'medicamentoActual': medicamentoActual,
       'otrasPatologias': otrasPatologias,
-      'examenClinico': examenClinico,
-      'examenRadiografico': examenRadiografico,
-      'diagnostico': diagnostico,
-      'tratamiento': tratamiento,
-      'tecnicaAnestesia': tecnicaAnestesia,
-      'evolucion': evolucion,
     };
   }
 }

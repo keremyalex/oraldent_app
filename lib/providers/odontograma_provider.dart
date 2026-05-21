@@ -23,24 +23,6 @@ class OdontogramaProvider extends ChangeNotifier {
   bool get isEditing => _isEditing;
   bool get hasChanges => _hasChanges;
 
-  Future<void> load(int pacienteId) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    try {
-      _odontograma = await _odontogramaService.obtenerPorPaciente(pacienteId);
-      _originalOdontograma = _odontograma;
-      _isEditing = false;
-      _hasChanges = false;
-    } catch (error) {
-      _errorMessage = apiErrorMessage(error);
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
   Future<void> loadPorFicha(int fichaId) async {
     _isLoading = true;
     _errorMessage = null;

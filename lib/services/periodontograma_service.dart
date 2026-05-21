@@ -5,7 +5,8 @@ class PeriodontogramaDienteRequest {
   const PeriodontogramaDienteRequest({
     required this.ausente,
     required this.implante,
-    required this.furcacion,
+    required this.furcacionVestibular,
+    required this.furcacionPalatinaLingual,
     this.movilidad,
     this.observacion,
   });
@@ -13,7 +14,8 @@ class PeriodontogramaDienteRequest {
   final bool ausente;
   final bool implante;
   final int? movilidad;
-  final String furcacion;
+  final String furcacionVestibular;
+  final String furcacionPalatinaLingual;
   final String? observacion;
 
   Map<String, dynamic> toJson() {
@@ -21,7 +23,8 @@ class PeriodontogramaDienteRequest {
       'ausente': ausente,
       'implante': implante,
       'movilidad': movilidad,
-      'furcacion': furcacion,
+      'furcacionVestibular': furcacionVestibular,
+      'furcacionPalatinaLingual': furcacionPalatinaLingual,
       'observacion': observacion,
     };
   }
@@ -60,13 +63,6 @@ class PeriodontogramaService {
   const PeriodontogramaService(this._apiClient);
 
   final ApiClient _apiClient;
-
-  Future<Periodontograma> obtenerPorPaciente(int pacienteId) async {
-    final response = await _apiClient.dio.get<Map<String, dynamic>>(
-      '/api/pacientes/$pacienteId/periodontograma',
-    );
-    return Periodontograma.fromJson(response.data!);
-  }
 
   Future<Periodontograma> obtenerPorFicha(int fichaId) async {
     final response = await _apiClient.dio.get<Map<String, dynamic>>(

@@ -18,21 +18,6 @@ class PeriodontogramaProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   Periodontograma? get periodontograma => _periodontograma;
 
-  Future<void> load(int pacienteId) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    try {
-      _periodontograma = await _service.obtenerPorPaciente(pacienteId);
-    } catch (error) {
-      _errorMessage = apiErrorMessage(error);
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
   Future<void> loadPorFicha(int fichaId) async {
     _isLoading = true;
     _errorMessage = null;

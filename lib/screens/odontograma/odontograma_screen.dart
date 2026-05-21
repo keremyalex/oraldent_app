@@ -11,15 +11,9 @@ import 'package:odontologia_app/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 
 class OdontogramaScreen extends StatefulWidget {
-  const OdontogramaScreen({
-    required this.pacienteId,
-    this.fichaId,
-    this.paciente,
-    super.key,
-  });
+  const OdontogramaScreen({required this.fichaId, this.paciente, super.key});
 
-  final int pacienteId;
-  final int? fichaId;
+  final int fichaId;
   final Paciente? paciente;
 
   @override
@@ -105,12 +99,7 @@ class _OdontogramaScreenState extends State<OdontogramaScreen> {
   }
 
   void _loadOdontograma(BuildContext context) {
-    final fichaId = widget.fichaId;
-    if (fichaId == null) {
-      context.read<OdontogramaProvider>().load(widget.pacienteId);
-      return;
-    }
-    context.read<OdontogramaProvider>().loadPorFicha(fichaId);
+    context.read<OdontogramaProvider>().loadPorFicha(widget.fichaId);
   }
 
   void _saveObservaciones(BuildContext context) {

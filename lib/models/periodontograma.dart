@@ -80,7 +80,8 @@ class PeriodontogramaDiente {
     required this.posicion,
     required this.ausente,
     required this.implante,
-    required this.furcacion,
+    required this.furcacionVestibular,
+    required this.furcacionPalatinaLingual,
     required this.sitios,
     this.movilidad,
     this.observacion,
@@ -95,8 +96,13 @@ class PeriodontogramaDiente {
       ausente: json['ausente'] as bool? ?? false,
       implante: json['implante'] as bool? ?? false,
       movilidad: json['movilidad'] as int?,
-      furcacion:
-          json['furcacion'] as String? ?? PeriodontogramaFurcacion.ninguna,
+      furcacionVestibular:
+          json['furcacionVestibular'] as String? ??
+          json['furcacion'] as String? ??
+          PeriodontogramaFurcacion.ninguna,
+      furcacionPalatinaLingual:
+          json['furcacionPalatinaLingual'] as String? ??
+          PeriodontogramaFurcacion.ninguna,
       observacion: json['observacion'] as String?,
       sitios: (json['sitios'] as List<dynamic>)
           .cast<Map<String, dynamic>>()
@@ -112,15 +118,21 @@ class PeriodontogramaDiente {
   final bool ausente;
   final bool implante;
   final int? movilidad;
-  final String furcacion;
+  final String furcacionVestibular;
+  final String furcacionPalatinaLingual;
   final String? observacion;
   final List<PeriodontogramaSitio> sitios;
+
+  bool get permiteFurcacion => PeriodontogramaFurcacion.aplicaA(numeroFdi);
 
   bool get tieneHallazgos {
     return ausente ||
         implante ||
         movilidad != null ||
-        furcacion != PeriodontogramaFurcacion.ninguna ||
+        (permiteFurcacion &&
+            (furcacionVestibular != PeriodontogramaFurcacion.ninguna ||
+                furcacionPalatinaLingual !=
+                    PeriodontogramaFurcacion.ninguna)) ||
         (observacion != null && observacion!.isNotEmpty) ||
         sitios.any((sitio) => sitio.tieneHallazgos);
   }
@@ -221,6 +233,40 @@ class PeriodontogramaSitioTipo {
   }
 }
 
+enum PeriodontogramaSitioGrupo {
+  vestibular,
+  palatinaLingual;
+
+  String get titulo {
+    return switch (this) {
+      PeriodontogramaSitioGrupo.vestibular => 'Cara vestibular',
+      PeriodontogramaSitioGrupo.palatinaLingual => 'Cara palatina/lingual',
+    };
+  }
+
+  String get furcacionLabel {
+    return switch (this) {
+      PeriodontogramaSitioGrupo.vestibular => 'Furcacion vestibular',
+      PeriodontogramaSitioGrupo.palatinaLingual => 'Furcacion palatina/lingual',
+    };
+  }
+
+  List<String> get sitios {
+    return switch (this) {
+      PeriodontogramaSitioGrupo.vestibular => const [
+        PeriodontogramaSitioTipo.mesioVestibular,
+        PeriodontogramaSitioTipo.vestibular,
+        PeriodontogramaSitioTipo.distoVestibular,
+      ],
+      PeriodontogramaSitioGrupo.palatinaLingual => const [
+        PeriodontogramaSitioTipo.mesioPalatino,
+        PeriodontogramaSitioTipo.palatino,
+        PeriodontogramaSitioTipo.distoPalatino,
+      ],
+    };
+  }
+}
+
 class PeriodontogramaFurcacion {
   static const ninguna = 'NINGUNA';
   static const gradoI = 'GRADO_I';
@@ -228,6 +274,24 @@ class PeriodontogramaFurcacion {
   static const gradoIII = 'GRADO_III';
 
   static const all = [ninguna, gradoI, gradoII, gradoIII];
+  static const dientesConFurcacion = {
+    16,
+    17,
+    18,
+    26,
+    27,
+    28,
+    36,
+    37,
+    38,
+    46,
+    47,
+    48,
+  };
+
+  static bool aplicaA(int numeroFdi) {
+    return dientesConFurcacion.contains(numeroFdi);
+  }
 
   static String label(String value) {
     return switch (value) {

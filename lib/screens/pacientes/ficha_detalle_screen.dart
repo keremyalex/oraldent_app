@@ -326,7 +326,7 @@ class _FichaDetalleScreenState extends State<FichaDetalleScreen> {
     _pulsoController.text = ficha.pulso?.toString() ?? '';
     _motivoController.text = ficha.motivoConsulta ?? '';
     _enfermedadController.text = ficha.enfermedadActual ?? '';
-    _anamnesisController.text = ficha.anamnesis ?? '';
+    _anamnesisController.text = ficha.descripcionAnamnesis ?? '';
     _alergiasController.text = ficha.alergias ?? '';
     _medicamentoController.text = ficha.medicamentoActual ?? '';
     _otrasPatologiasController.text = ficha.otrasPatologias ?? '';
@@ -363,17 +363,19 @@ class _FichaDetalleScreenState extends State<FichaDetalleScreen> {
       pulso: _parseInt(_pulsoController.text),
       motivoConsulta: _emptyToNull(_motivoController.text),
       enfermedadActual: _emptyToNull(_enfermedadController.text),
-      anamnesis: _emptyToNull(_anamnesisController.text),
-      hemorragia: _hemorragia,
-      diabetes: _diabetes,
-      hipertension: _hipertension,
-      epilepsia: _epilepsia,
-      problemasCardiovasculares: _problemasCardiovasculares,
-      lipotimias: _lipotimias,
-      tratamientoMedicoActual: _tratamientoMedicoActual,
-      alergias: _emptyToNull(_alergiasController.text),
-      medicamentoActual: _emptyToNull(_medicamentoController.text),
-      otrasPatologias: _emptyToNull(_otrasPatologiasController.text),
+      anamnesis: FichaAnamnesisRequest(
+        descripcion: _emptyToNull(_anamnesisController.text),
+        hemorragia: _hemorragia,
+        diabetes: _diabetes,
+        hipertension: _hipertension,
+        epilepsia: _epilepsia,
+        problemasCardiovasculares: _problemasCardiovasculares,
+        lipotimias: _lipotimias,
+        tratamientoMedicoActual: _tratamientoMedicoActual,
+        alergias: _emptyToNull(_alergiasController.text),
+        medicamentoActual: _emptyToNull(_medicamentoController.text),
+        otrasPatologias: _emptyToNull(_otrasPatologiasController.text),
+      ),
       examenClinico: _emptyToNull(_examenClinicoController.text),
       examenRadiografico: _emptyToNull(_examenRadiograficoController.text),
       diagnostico: _emptyToNull(_diagnosticoController.text),

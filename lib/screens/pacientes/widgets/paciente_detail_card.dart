@@ -20,12 +20,12 @@ class PacienteDetailCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFE7F7F4),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.16)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.04),
+            color: AppColors.primary.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -65,7 +65,7 @@ class PacienteDetailCard extends StatelessWidget {
                 icon: const Icon(Icons.edit_outlined),
                 color: AppColors.primary,
                 style: IconButton.styleFrom(
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.08),
+                  backgroundColor: Colors.white.withValues(alpha: 0.72),
                 ),
               ),
             ],
@@ -195,8 +195,9 @@ class _InfoChip extends StatelessWidget {
       constraints: const BoxConstraints(maxWidth: 260),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.neutral,
+        color: Colors.white.withValues(alpha: 0.70),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.56)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

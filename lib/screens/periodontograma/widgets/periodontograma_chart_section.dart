@@ -3,9 +3,20 @@ import 'package:odontologia_app/models/periodontograma.dart';
 import 'package:odontologia_app/theme/app_colors.dart';
 
 class PeriodontogramaChartSection extends StatelessWidget {
-  const PeriodontogramaChartSection({required this.periodontograma, super.key});
+  const PeriodontogramaChartSection({
+    required this.periodontograma,
+    required this.onDienteTap,
+    required this.onSitiosTap,
+    super.key,
+  });
 
   final Periodontograma periodontograma;
+  final ValueChanged<PeriodontogramaDiente> onDienteTap;
+  final void Function(
+    PeriodontogramaDiente diente,
+    PeriodontogramaSitioGrupo grupo,
+  )
+  onSitiosTap;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +51,7 @@ class PeriodontogramaChartSection extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: SizedBox(
               width: 790,
-              height: 720,
+              height: 890,
               child: Stack(
                 children: [
                   _ChartImage(
@@ -48,15 +59,15 @@ class PeriodontogramaChartSection extends StatelessWidget {
                     asset: 'assets/periodontogram/chart/ok-teeth-01.jpg',
                   ),
                   _ChartImage(
-                    top: 176,
+                    top: 240,
                     asset: 'assets/periodontogram/chart/ok-teeth-02.jpg',
                   ),
                   _ChartImage(
-                    top: 382,
+                    top: 470,
                     asset: 'assets/periodontogram/chart/uk-teeth-01.jpg',
                   ),
                   _ChartImage(
-                    top: 558,
+                    top: 710,
                     asset: 'assets/periodontogram/chart/uk-teeth-02.jpg',
                   ),
                   ..._implantOverlays(periodontograma),
@@ -65,6 +76,7 @@ class PeriodontogramaChartSection extends StatelessWidget {
                       painter: _PeriodontalChartPainter(periodontograma),
                     ),
                   ),
+                  ..._toothControls(periodontograma),
                 ],
               ),
             ),
@@ -72,6 +84,73 @@ class PeriodontogramaChartSection extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  List<Widget> _toothControls(Periodontograma periodontograma) {
+    const upper = [
+      18,
+      17,
+      16,
+      15,
+      14,
+      13,
+      12,
+      11,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+    ];
+    const lower = [
+      48,
+      47,
+      46,
+      45,
+      44,
+      43,
+      42,
+      41,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+    ];
+    return [
+      for (final tooth in upper)
+        if (periodontograma.dientePorFdi(tooth) case final diente?)
+          _ToothChartControls(
+            diente: diente,
+            x: _controlX(tooth),
+            y: 201,
+            topGroup: PeriodontogramaSitioGrupo.vestibular,
+            bottomGroup: PeriodontogramaSitioGrupo.palatinaLingual,
+            topLabel: 'V',
+            bottomLabel: 'P',
+            onDienteTap: onDienteTap,
+            onSitiosTap: onSitiosTap,
+          ),
+      for (final tooth in lower)
+        if (periodontograma.dientePorFdi(tooth) case final diente?)
+          _ToothChartControls(
+            diente: diente,
+            x: _controlX(tooth),
+            y: 671,
+            topGroup: PeriodontogramaSitioGrupo.palatinaLingual,
+            bottomGroup: PeriodontogramaSitioGrupo.vestibular,
+            topLabel: 'L',
+            bottomLabel: 'V',
+            onDienteTap: onDienteTap,
+            onSitiosTap: onSitiosTap,
+          ),
+    ];
   }
 
   List<Widget> _implantOverlays(Periodontograma periodontograma) {
@@ -87,18 +166,18 @@ class PeriodontogramaChartSection extends StatelessWidget {
             _ImplantOverlay(
               asset: _implantAsset(diente.numeroFdi, 'p'),
               x: _implantX(diente.numeroFdi, 'p'),
-              y: _implantY(diente.numeroFdi, 'p') + 176,
+              y: _implantY(diente.numeroFdi, 'p') + 240,
             ),
           ] else ...[
             _ImplantOverlay(
               asset: _implantAsset(diente.numeroFdi, 'l'),
               x: _implantX(diente.numeroFdi, 'l'),
-              y: _implantY(diente.numeroFdi, 'l') + 382,
+              y: _implantY(diente.numeroFdi, 'l') + 470,
             ),
             _ImplantOverlay(
               asset: _implantAsset(diente.numeroFdi, 'b'),
               x: _implantX(diente.numeroFdi, 'b'),
-              y: _implantY(diente.numeroFdi, 'b') + 558,
+              y: _implantY(diente.numeroFdi, 'b') + 710,
             ),
           ],
         ],
@@ -114,6 +193,139 @@ class PeriodontogramaChartSection extends StatelessWidget {
       _implantCoordinates['$tooth$side']!.$1;
   double _implantY(int tooth, String side) =>
       _implantCoordinates['$tooth$side']!.$2;
+
+  double _controlX(int tooth) {
+    final buccal = _implantCoordinates['${tooth}b']?.$1;
+    final oral =
+        _implantCoordinates['${tooth}p']?.$1 ??
+        _implantCoordinates['${tooth}l']?.$1;
+    return ((buccal ?? oral ?? 0) + (oral ?? buccal ?? 0)) / 2;
+  }
+}
+
+class _ToothChartControls extends StatelessWidget {
+  const _ToothChartControls({
+    required this.diente,
+    required this.x,
+    required this.y,
+    required this.topGroup,
+    required this.bottomGroup,
+    required this.topLabel,
+    required this.bottomLabel,
+    required this.onDienteTap,
+    required this.onSitiosTap,
+  });
+
+  final PeriodontogramaDiente diente;
+  final double x;
+  final double y;
+  final PeriodontogramaSitioGrupo topGroup;
+  final PeriodontogramaSitioGrupo bottomGroup;
+  final String topLabel;
+  final String bottomLabel;
+  final ValueChanged<PeriodontogramaDiente> onDienteTap;
+  final void Function(
+    PeriodontogramaDiente diente,
+    PeriodontogramaSitioGrupo grupo,
+  )
+  onSitiosTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: x - 15,
+      top: y - 31,
+      width: 30,
+      height: 63,
+      child: Column(
+        children: [
+          _MiniChartButton(
+            label: topLabel,
+            tooltip: topGroup.titulo,
+            onTap: () => onSitiosTap(diente, topGroup),
+          ),
+          SizedBox(
+            width: 30,
+            height: 17,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => onDienteTap(diente),
+              child: Center(
+                child: Text(
+                  '${diente.numeroFdi}',
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          _MiniChartButton(
+            label: bottomLabel,
+            tooltip: bottomGroup.titulo,
+            onTap: () => onSitiosTap(diente, bottomGroup),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniChartButton extends StatelessWidget {
+  const _MiniChartButton({
+    required this.label,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  final String label;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xFFEFF6FF),
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.primary, width: 1.4),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 4,
+              offset: const Offset(0, 1.5),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: SizedBox(
+              width: 22,
+              height: 22,
+              child: Center(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _ChartImage extends StatelessWidget {
@@ -333,8 +545,6 @@ class _PeriodontalChartPainter extends CustomPainter {
     _drawBand(canvas, teeth: _upperTeeth, band: const _Band.upperPalatal());
     _drawBand(canvas, teeth: _lowerTeeth, band: const _Band.lowerLingual());
     _drawBand(canvas, teeth: _lowerTeeth, band: const _Band.lowerBuccal());
-    _drawToothNumbers(canvas, teeth: _upperTeeth, y: 171);
-    _drawToothNumbers(canvas, teeth: _lowerTeeth, y: 553);
   }
 
   void _drawBand(
@@ -389,28 +599,6 @@ class _PeriodontalChartPainter extends CustomPainter {
           paint,
         );
       }
-    }
-  }
-
-  void _drawToothNumbers(
-    Canvas canvas, {
-    required List<int> teeth,
-    required double y,
-  }) {
-    final painter = TextPainter(textDirection: TextDirection.ltr);
-    for (final tooth in teeth) {
-      final coords = _x[tooth]!;
-      final x = (coords.mb + coords.db) / 2;
-      painter.text = TextSpan(
-        text: '$tooth',
-        style: const TextStyle(
-          color: Color(0xFF475569),
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
-      );
-      painter.layout();
-      painter.paint(canvas, Offset(x - painter.width / 2, y - painter.height));
     }
   }
 
@@ -513,7 +701,7 @@ class _Band {
       );
   const _Band.upperPalatal()
     : this(
-        top: 176,
+        top: 240,
         zeroLine: 53,
         isOral: true,
         gmDirection: -1,
@@ -522,7 +710,7 @@ class _Band {
       );
   const _Band.lowerLingual()
     : this(
-        top: 382,
+        top: 470,
         zeroLine: 108,
         isOral: true,
         gmDirection: 1,
@@ -531,7 +719,7 @@ class _Band {
       );
   const _Band.lowerBuccal()
     : this(
-        top: 558,
+        top: 710,
         zeroLine: 61,
         isOral: false,
         gmDirection: -1,

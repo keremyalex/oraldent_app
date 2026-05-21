@@ -65,16 +65,6 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         },
       ),
       GoRoute(
-        path: '/pacientes/:pacienteId/odontograma',
-        builder: (context, state) {
-          final pacienteId = int.parse(state.pathParameters['pacienteId']!);
-          return OdontogramaScreen(
-            pacienteId: pacienteId,
-            paciente: state.extra is Paciente ? state.extra as Paciente : null,
-          );
-        },
-      ),
-      GoRoute(
         path: '/fichas/:fichaId',
         builder: (context, state) {
           final fichaId = int.parse(state.pathParameters['fichaId']!);
@@ -91,21 +81,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           final paciente = state.extra is Paciente
               ? state.extra as Paciente
               : null;
-          return OdontogramaScreen(
-            pacienteId: paciente?.id ?? 0,
-            fichaId: fichaId,
-            paciente: paciente,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/pacientes/:pacienteId/periodontograma',
-        builder: (context, state) {
-          final pacienteId = int.parse(state.pathParameters['pacienteId']!);
-          return PeriodontogramaScreen(
-            pacienteId: pacienteId,
-            paciente: state.extra is Paciente ? state.extra as Paciente : null,
-          );
+          return OdontogramaScreen(fichaId: fichaId, paciente: paciente);
         },
       ),
       GoRoute(
@@ -115,11 +91,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           final paciente = state.extra is Paciente
               ? state.extra as Paciente
               : null;
-          return PeriodontogramaScreen(
-            pacienteId: paciente?.id ?? 0,
-            fichaId: fichaId,
-            paciente: paciente,
-          );
+          return PeriodontogramaScreen(fichaId: fichaId, paciente: paciente);
         },
       ),
       GoRoute(
