@@ -11,43 +11,57 @@ class FichasProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _isSaving = false;
   String? _errorMessage;
-  int? _loadedPacienteId;
-  List<FichaClinica> _fichas = [];
+  final Map<int, List<FichaClinica>> _fichasPorPaciente = {};
+  final Set<int> _pacientesCargando = {};
+  final Map<int, String> _erroresPorPaciente = {};
 
   bool get isLoading => _isLoading;
   bool get isSaving => _isSaving;
   String? get errorMessage => _errorMessage;
-  List<FichaClinica> get fichas => _fichas;
+
+  List<FichaClinica> fichasDePaciente(int pacienteId) {
+    return _fichasPorPaciente[pacienteId] ?? const [];
+  }
+
+  bool cargandoPaciente(int pacienteId) {
+    return _pacientesCargando.contains(pacienteId);
+  }
+
+  String? errorDePaciente(int pacienteId) {
+    return _erroresPorPaciente[pacienteId];
+  }
 
   FichaClinica? fichaPorId(int fichaId) {
-    for (final ficha in _fichas) {
-      if (ficha.id == fichaId) {
-        return ficha;
+    for (final fichas in _fichasPorPaciente.values) {
+      for (final ficha in fichas) {
+        if (ficha.id == fichaId) {
+          return ficha;
+        }
       }
     }
     return null;
   }
 
   Future<void> load(int pacienteId) async {
-    _isLoading = true;
-    _errorMessage = null;
+    _pacientesCargando.add(pacienteId);
+    _erroresPorPaciente.remove(pacienteId);
     notifyListeners();
 
     try {
-      _fichas = _ordenarDesc(
+      _fichasPorPaciente[pacienteId] = _ordenarDesc(
         await _fichasService.listarPorPaciente(pacienteId),
       );
-      _loadedPacienteId = pacienteId;
     } catch (error) {
-      _errorMessage = apiErrorMessage(error);
+      _erroresPorPaciente[pacienteId] = apiErrorMessage(error);
     } finally {
-      _isLoading = false;
+      _pacientesCargando.remove(pacienteId);
       notifyListeners();
     }
   }
 
   Future<void> loadIfNeeded(int pacienteId) async {
-    if (_loadedPacienteId == pacienteId || _isLoading) {
+    if (_fichasPorPaciente.containsKey(pacienteId) ||
+        _pacientesCargando.contains(pacienteId)) {
       return;
     }
     await load(pacienteId);
@@ -63,8 +77,10 @@ class FichasProvider extends ChangeNotifier {
         pacienteId: pacienteId,
         request: FichaClinicaRequest(fecha: DateTime.now()),
       );
-      _fichas = _ordenarDesc([ficha, ..._fichas]);
-      _loadedPacienteId = pacienteId;
+      _fichasPorPaciente[pacienteId] = _ordenarDesc([
+        ficha,
+        ...fichasDePaciente(pacienteId),
+      ]);
       return null;
     } catch (error) {
       return apiErrorMessage(error);
@@ -116,13 +132,18 @@ class FichasProvider extends ChangeNotifier {
   }
 
   void _replaceFicha(FichaClinica ficha) {
-    final index = _fichas.indexWhere((item) => item.id == ficha.id);
+    final pacienteId = ficha.paciente.id;
+    final fichas = fichasDePaciente(pacienteId);
+    final index = fichas.indexWhere((item) => item.id == ficha.id);
     if (index == -1) {
-      _fichas = [ficha, ..._fichas];
+      _fichasPorPaciente[pacienteId] = _ordenarDesc([ficha, ...fichas]);
       return;
     }
-    _fichas = [..._fichas.take(index), ficha, ..._fichas.skip(index + 1)];
-    _fichas = _ordenarDesc(_fichas);
+    _fichasPorPaciente[pacienteId] = _ordenarDesc([
+      ...fichas.take(index),
+      ficha,
+      ...fichas.skip(index + 1),
+    ]);
   }
 
   List<FichaClinica> _ordenarDesc(List<FichaClinica> fichas) {

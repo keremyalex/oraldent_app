@@ -107,10 +107,10 @@ class _PacienteDetalleScreenState extends State<PacienteDetalleScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
                   child: FichaHistorySection(
-                    fichas: fichasProvider.fichas,
-                    isLoading: fichasProvider.isLoading,
+                    fichas: fichasProvider.fichasDePaciente(paciente.id),
+                    isLoading: fichasProvider.cargandoPaciente(paciente.id),
                     isSaving: fichasProvider.isSaving,
-                    errorMessage: fichasProvider.errorMessage,
+                    errorMessage: fichasProvider.errorDePaciente(paciente.id),
                     onRefresh: () =>
                         context.read<FichasProvider>().load(paciente.id),
                     onCreateFicha: () => _createFicha(context, paciente),
