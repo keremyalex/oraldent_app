@@ -9,10 +9,7 @@ import 'package:odontologia_app/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 
 class CitaFormSheet extends StatefulWidget {
-  const CitaFormSheet({
-    this.cita,
-    super.key,
-  });
+  const CitaFormSheet({this.cita, super.key});
 
   final Cita? cita;
 
@@ -114,6 +111,7 @@ class _CitaFormSheetState extends State<CitaFormSheet> {
               const SizedBox(height: 18),
               DropdownButtonFormField<int>(
                 initialValue: _pacienteId,
+                isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Paciente',
                   prefixIcon: Icon(Icons.person_outline_rounded),
@@ -123,6 +121,7 @@ class _CitaFormSheetState extends State<CitaFormSheet> {
                     value: paciente.id,
                     child: Text(
                       paciente.nombreCompleto,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   );
@@ -140,6 +139,7 @@ class _CitaFormSheetState extends State<CitaFormSheet> {
               const SizedBox(height: 14),
               DropdownButtonFormField<int>(
                 initialValue: _servicioId,
+                isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Servicio',
                   prefixIcon: Icon(Icons.medical_services_outlined),
@@ -149,6 +149,7 @@ class _CitaFormSheetState extends State<CitaFormSheet> {
                     value: servicio.id,
                     child: Text(
                       servicio.nombre,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   );
@@ -212,8 +213,9 @@ class _CitaFormSheetState extends State<CitaFormSheet> {
               SizedBox(
                 height: 50,
                 child: FilledButton(
-                  onPressed:
-                      citasProvider.isSaving ? null : () => _save(context),
+                  onPressed: citasProvider.isSaving
+                      ? null
+                      : () => _save(context),
                   child: citasProvider.isSaving
                       ? const SizedBox(
                           width: 20,
@@ -265,8 +267,9 @@ class _CitaFormSheetState extends State<CitaFormSheet> {
       if (!mounted) {
         return;
       }
-      final currentTime =
-          widget.cita == null ? null : _formatTime(widget.cita!.fechaHoraInicio);
+      final currentTime = widget.cita == null
+          ? null
+          : _formatTime(widget.cita!.fechaHoraInicio);
       setState(() {
         _availableTimes = [
           ...times,
@@ -349,10 +352,7 @@ class _CitaFormSheetState extends State<CitaFormSheet> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -416,17 +416,17 @@ class _DateButton extends StatelessWidget {
                 Text(
                   'Fecha',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: AppColors.secondary,
-                        fontSize: 12,
-                      ),
+                    color: AppColors.secondary,
+                    fontSize: 12,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _formatDate(value),
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: AppColors.inverted,
-                        fontSize: 16,
-                      ),
+                    color: AppColors.inverted,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
