@@ -12,6 +12,8 @@ class PeriodontogramaProvider extends ChangeNotifier {
   bool _isSaving = false;
   String? _errorMessage;
   Periodontograma? _periodontograma;
+  int? _currentFichaId;
+  int _requestVersion = 0;
 
   bool get isLoading => _isLoading;
   bool get isSaving => _isSaving;
@@ -19,17 +21,34 @@ class PeriodontogramaProvider extends ChangeNotifier {
   Periodontograma? get periodontograma => _periodontograma;
 
   Future<void> loadPorFicha(int fichaId) async {
+    final requestVersion = ++_requestVersion;
+    final isDifferentFicha = _currentFichaId != fichaId;
+
     _isLoading = true;
     _errorMessage = null;
+    _currentFichaId = fichaId;
+    if (isDifferentFicha) {
+      _periodontograma = null;
+    }
     notifyListeners();
 
     try {
-      _periodontograma = await _service.obtenerPorFicha(fichaId);
+      final periodontograma = await _service.obtenerPorFicha(fichaId);
+      if (requestVersion != _requestVersion) {
+        return;
+      }
+      _periodontograma = periodontograma;
     } catch (error) {
+      if (requestVersion != _requestVersion) {
+        return;
+      }
       _errorMessage = apiErrorMessage(error);
+      _periodontograma = null;
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (requestVersion == _requestVersion) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 

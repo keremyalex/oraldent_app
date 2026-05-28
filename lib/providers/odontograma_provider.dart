@@ -15,6 +15,8 @@ class OdontogramaProvider extends ChangeNotifier {
   Odontograma? _originalOdontograma;
   bool _isEditing = false;
   bool _hasChanges = false;
+  int? _currentFichaId;
+  int _requestVersion = 0;
 
   bool get isLoading => _isLoading;
   bool get isSaving => _isSaving;
@@ -24,20 +26,43 @@ class OdontogramaProvider extends ChangeNotifier {
   bool get hasChanges => _hasChanges;
 
   Future<void> loadPorFicha(int fichaId) async {
+    final requestVersion = ++_requestVersion;
+    final isDifferentFicha = _currentFichaId != fichaId;
+
     _isLoading = true;
     _errorMessage = null;
+    _currentFichaId = fichaId;
+    if (isDifferentFicha) {
+      _odontograma = null;
+      _originalOdontograma = null;
+      _isEditing = false;
+      _hasChanges = false;
+    }
     notifyListeners();
 
     try {
-      _odontograma = await _odontogramaService.obtenerPorFicha(fichaId);
+      final odontograma = await _odontogramaService.obtenerPorFicha(fichaId);
+      if (requestVersion != _requestVersion) {
+        return;
+      }
+      _odontograma = odontograma;
       _originalOdontograma = _odontograma;
       _isEditing = false;
       _hasChanges = false;
     } catch (error) {
+      if (requestVersion != _requestVersion) {
+        return;
+      }
       _errorMessage = apiErrorMessage(error);
+      _odontograma = null;
+      _originalOdontograma = null;
+      _isEditing = false;
+      _hasChanges = false;
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (requestVersion == _requestVersion) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
