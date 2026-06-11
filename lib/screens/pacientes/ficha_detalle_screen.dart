@@ -1,7 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:odontologia_app/models/ficha_clinica.dart';
 import 'package:odontologia_app/models/paciente.dart';
 import 'package:odontologia_app/providers/fichas_provider.dart';
+import 'package:odontologia_app/providers/odontograma_provider.dart';
+import 'package:odontologia_app/providers/periodontograma_provider.dart';
+import 'package:odontologia_app/screens/pacientes/ficha_detalle/ficha_form_fields.dart';
+import 'package:odontologia_app/screens/pacientes/ficha_detalle/ficha_module_cards.dart';
+import 'package:odontologia_app/screens/pacientes/ficha_detalle/ficha_save_button.dart';
+import 'package:odontologia_app/screens/pacientes/ficha_detalle/ficha_section_card.dart';
+import 'package:odontologia_app/screens/pacientes/ficha_detalle/ficha_tab_bar.dart';
+import 'package:odontologia_app/screens/pacientes/ficha_detalle/ficha_tab_scaffold.dart';
+import 'package:odontologia_app/screens/pacientes/radiografias/radiografias_tab.dart';
+import 'package:odontologia_app/screens/pacientes/widgets/recetas_tab.dart';
 import 'package:odontologia_app/services/fichas_service.dart';
 import 'package:odontologia_app/theme/app_colors.dart';
 import 'package:provider/provider.dart';
@@ -16,8 +28,10 @@ class FichaDetalleScreen extends StatefulWidget {
   State<FichaDetalleScreen> createState() => _FichaDetalleScreenState();
 }
 
-class _FichaDetalleScreenState extends State<FichaDetalleScreen> {
+class _FichaDetalleScreenState extends State<FichaDetalleScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
+  late final TabController _tabController;
   final _edadController = TextEditingController();
   final _sexoController = TextEditingController();
   final _procedenciaController = TextEditingController();
@@ -47,6 +61,21 @@ class _FichaDetalleScreenState extends State<FichaDetalleScreen> {
   bool _lipotimias = false;
   bool _tratamientoMedicoActual = false;
 
+  static const _tabs = [
+    FichaTabData('Ficha', Icons.assignment_outlined),
+    FichaTabData('Anamnesis', Icons.health_and_safety_outlined),
+    FichaTabData('Odontograma', FontAwesomeIcons.teeth),
+    FichaTabData('Periodonto', FontAwesomeIcons.tooth),
+    FichaTabData('Radiografias', Icons.image_search_outlined),
+    FichaTabData('Recetas', Icons.receipt_long_outlined),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _tabs.length, vsync: this);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -70,6 +99,7 @@ class _FichaDetalleScreenState extends State<FichaDetalleScreen> {
 
   @override
   void dispose() {
+    _tabController.dispose();
     _edadController.dispose();
     _sexoController.dispose();
     _procedenciaController.dispose();
@@ -127,186 +157,246 @@ class _FichaDetalleScreenState extends State<FichaDetalleScreen> {
             ? const Center(child: CircularProgressIndicator())
             : Form(
                 key: _formKey,
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 24),
+                child: Column(
                   children: [
-                    _SectionCard(
-                      title: 'Datos generales',
-                      icon: Icons.assignment_ind_outlined,
-                      children: [
-                        _NumberField(
-                          controller: _edadController,
-                          label: 'Edad',
-                        ),
-                        _TextField(controller: _sexoController, label: 'Sexo'),
-                        _TextField(
-                          controller: _procedenciaController,
-                          label: 'Procedencia',
-                        ),
-                        _TextField(
-                          controller: _ocupacionController,
-                          label: 'Ocupacion',
-                        ),
-                      ],
-                    ),
-                    _SectionCard(
-                      title: 'Signos vitales',
-                      icon: Icons.monitor_heart_outlined,
-                      children: [
-                        _TextField(
-                          controller: _presionController,
-                          label: 'Presion arterial',
-                        ),
-                        _DecimalField(
-                          controller: _temperaturaController,
-                          label: 'Temperatura',
-                        ),
-                        _NumberField(
-                          controller: _pulsoController,
-                          label: 'Pulso',
-                        ),
-                      ],
-                    ),
-                    _SectionCard(
-                      title: 'Anamnesis',
-                      icon: Icons.forum_outlined,
-                      children: [
-                        _TextField(
-                          controller: _motivoController,
-                          label: 'Motivo de consulta',
-                          maxLines: 3,
-                        ),
-                        _TextField(
-                          controller: _enfermedadController,
-                          label: 'Enfermedad actual',
-                          maxLines: 4,
-                        ),
-                        _TextField(
-                          controller: _anamnesisController,
-                          label: 'Anamnesis',
-                          maxLines: 4,
-                        ),
-                      ],
-                    ),
-                    _SectionCard(
-                      title: 'Antecedentes patologicos',
-                      icon: Icons.health_and_safety_outlined,
-                      children: [
-                        _SwitchTile(
-                          title: 'Hemorragia',
-                          value: _hemorragia,
-                          onChanged: (value) =>
-                              setState(() => _hemorragia = value),
-                        ),
-                        _SwitchTile(
-                          title: 'Diabetes',
-                          value: _diabetes,
-                          onChanged: (value) =>
-                              setState(() => _diabetes = value),
-                        ),
-                        _SwitchTile(
-                          title: 'Hipertension',
-                          value: _hipertension,
-                          onChanged: (value) =>
-                              setState(() => _hipertension = value),
-                        ),
-                        _SwitchTile(
-                          title: 'Epilepsia',
-                          value: _epilepsia,
-                          onChanged: (value) =>
-                              setState(() => _epilepsia = value),
-                        ),
-                        _SwitchTile(
-                          title: 'Problemas cardiovasculares',
-                          value: _problemasCardiovasculares,
-                          onChanged: (value) => setState(
-                            () => _problemasCardiovasculares = value,
+                    FichaTabBar(controller: _tabController, tabs: _tabs),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          FichaTabScaffold(
+                            children: [
+                              FichaSectionCard(
+                                title: 'Datos generales',
+                                icon: Icons.assignment_ind_outlined,
+                                children: [
+                                  FichaNumberField(
+                                    controller: _edadController,
+                                    label: 'Edad',
+                                  ),
+                                  FichaTextField(
+                                    controller: _sexoController,
+                                    label: 'Sexo',
+                                  ),
+                                  FichaTextField(
+                                    controller: _procedenciaController,
+                                    label: 'Procedencia',
+                                  ),
+                                  FichaTextField(
+                                    controller: _ocupacionController,
+                                    label: 'Ocupacion',
+                                  ),
+                                ],
+                              ),
+                              FichaSectionCard(
+                                title: 'Signos vitales',
+                                icon: Icons.monitor_heart_outlined,
+                                children: [
+                                  FichaTextField(
+                                    controller: _presionController,
+                                    label: 'Presion arterial',
+                                  ),
+                                  FichaDecimalField(
+                                    controller: _temperaturaController,
+                                    label: 'Temperatura',
+                                  ),
+                                  FichaNumberField(
+                                    controller: _pulsoController,
+                                    label: 'Pulso',
+                                  ),
+                                ],
+                              ),
+                              FichaSectionCard(
+                                title: 'Consulta y evaluacion',
+                                icon: Icons.medical_information_outlined,
+                                children: [
+                                  FichaTextField(
+                                    controller: _motivoController,
+                                    label: 'Motivo de consulta',
+                                    maxLines: 3,
+                                  ),
+                                  FichaTextField(
+                                    controller: _enfermedadController,
+                                    label: 'Enfermedad actual',
+                                    maxLines: 4,
+                                  ),
+                                  FichaTextField(
+                                    controller: _examenClinicoController,
+                                    label: 'Examen clinico',
+                                    maxLines: 4,
+                                  ),
+                                  FichaTextField(
+                                    controller: _examenRadiograficoController,
+                                    label: 'Examen radiografico',
+                                    maxLines: 4,
+                                  ),
+                                  FichaTextField(
+                                    controller: _diagnosticoController,
+                                    label: 'Diagnostico',
+                                    maxLines: 4,
+                                  ),
+                                  FichaTextField(
+                                    controller: _tratamientoController,
+                                    label: 'Tratamiento',
+                                    maxLines: 4,
+                                  ),
+                                  FichaTextField(
+                                    controller: _anestesiaController,
+                                    label: 'Tecnica de anestesia',
+                                    maxLines: 3,
+                                  ),
+                                  FichaTextField(
+                                    controller: _evolucionController,
+                                    label: 'Evolucion',
+                                    maxLines: 4,
+                                  ),
+                                ],
+                              ),
+                              FichaSaveButton(
+                                isSaving: provider.isSaving,
+                                onPressed: () => _save(context, ficha),
+                              ),
+                            ],
                           ),
-                        ),
-                        _SwitchTile(
-                          title: 'Lipotimias',
-                          value: _lipotimias,
-                          onChanged: (value) =>
-                              setState(() => _lipotimias = value),
-                        ),
-                        _SwitchTile(
-                          title: 'Tratamiento medico actual',
-                          value: _tratamientoMedicoActual,
-                          onChanged: (value) =>
-                              setState(() => _tratamientoMedicoActual = value),
-                        ),
-                        _TextField(
-                          controller: _alergiasController,
-                          label: 'Alergias',
-                          maxLines: 3,
-                        ),
-                        _TextField(
-                          controller: _medicamentoController,
-                          label: 'Medicamento actual',
-                          maxLines: 3,
-                        ),
-                        _TextField(
-                          controller: _otrasPatologiasController,
-                          label: 'Otras patologias',
-                          maxLines: 3,
-                        ),
-                      ],
-                    ),
-                    _SectionCard(
-                      title: 'Evaluacion odontologica',
-                      icon: Icons.medical_information_outlined,
-                      initiallyExpanded: false,
-                      children: [
-                        _TextField(
-                          controller: _examenClinicoController,
-                          label: 'Examen clinico',
-                          maxLines: 4,
-                        ),
-                        _TextField(
-                          controller: _examenRadiograficoController,
-                          label: 'Examen radiografico',
-                          maxLines: 4,
-                        ),
-                        _TextField(
-                          controller: _diagnosticoController,
-                          label: 'Diagnostico',
-                          maxLines: 4,
-                        ),
-                        _TextField(
-                          controller: _tratamientoController,
-                          label: 'Tratamiento',
-                          maxLines: 4,
-                        ),
-                        _TextField(
-                          controller: _anestesiaController,
-                          label: 'Tecnica de anestesia',
-                          maxLines: 3,
-                        ),
-                        _TextField(
-                          controller: _evolucionController,
-                          label: 'Evolucion',
-                          maxLines: 4,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 50,
-                      child: FilledButton.icon(
-                        onPressed: provider.isSaving
-                            ? null
-                            : () => _save(context, ficha),
-                        icon: provider.isSaving
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
+                          FichaTabScaffold(
+                            children: [
+                              FichaSectionCard(
+                                title: 'Anamnesis',
+                                icon: Icons.forum_outlined,
+                                children: [
+                                  FichaTextField(
+                                    controller: _anamnesisController,
+                                    label: 'Descripcion',
+                                    maxLines: 5,
+                                  ),
+                                ],
+                              ),
+                              FichaSectionCard(
+                                title: 'Antecedentes patologicos',
+                                icon: Icons.health_and_safety_outlined,
+                                children: [
+                                  FichaSwitchTile(
+                                    title: 'Hemorragia',
+                                    value: _hemorragia,
+                                    onChanged: (value) =>
+                                        setState(() => _hemorragia = value),
+                                  ),
+                                  FichaSwitchTile(
+                                    title: 'Diabetes',
+                                    value: _diabetes,
+                                    onChanged: (value) =>
+                                        setState(() => _diabetes = value),
+                                  ),
+                                  FichaSwitchTile(
+                                    title: 'Hipertension',
+                                    value: _hipertension,
+                                    onChanged: (value) =>
+                                        setState(() => _hipertension = value),
+                                  ),
+                                  FichaSwitchTile(
+                                    title: 'Epilepsia',
+                                    value: _epilepsia,
+                                    onChanged: (value) =>
+                                        setState(() => _epilepsia = value),
+                                  ),
+                                  FichaSwitchTile(
+                                    title: 'Problemas cardiovasculares',
+                                    value: _problemasCardiovasculares,
+                                    onChanged: (value) => setState(
+                                      () => _problemasCardiovasculares = value,
+                                    ),
+                                  ),
+                                  FichaSwitchTile(
+                                    title: 'Lipotimias',
+                                    value: _lipotimias,
+                                    onChanged: (value) =>
+                                        setState(() => _lipotimias = value),
+                                  ),
+                                  FichaSwitchTile(
+                                    title: 'Tratamiento medico actual',
+                                    value: _tratamientoMedicoActual,
+                                    onChanged: (value) => setState(
+                                      () => _tratamientoMedicoActual = value,
+                                    ),
+                                  ),
+                                  FichaTextField(
+                                    controller: _alergiasController,
+                                    label: 'Alergias',
+                                    maxLines: 3,
+                                  ),
+                                  FichaTextField(
+                                    controller: _medicamentoController,
+                                    label: 'Medicamento actual',
+                                    maxLines: 3,
+                                  ),
+                                  FichaTextField(
+                                    controller: _otrasPatologiasController,
+                                    label: 'Otras patologias',
+                                    maxLines: 3,
+                                  ),
+                                ],
+                              ),
+                              FichaSaveButton(
+                                isSaving: provider.isSaving,
+                                onPressed: () => _save(context, ficha),
+                              ),
+                            ],
+                          ),
+                          FichaTabScaffold(
+                            children: [
+                              FichaModuleEntryCard(
+                                icon: FontAwesomeIcons.teeth,
+                                title: 'Odontograma',
+                                subtitle:
+                                    'Registra condiciones por pieza y superficie.',
+                                actionLabel: ficha?.odontogramaId == null
+                                    ? 'Crear odontograma'
+                                    : 'Abrir odontograma',
+                                secondaryActionLabel: 'Abrir PDF',
+                                secondaryActionIcon:
+                                    Icons.picture_as_pdf_outlined,
+                                onSecondaryTap: ficha?.odontogramaId == null
+                                    ? null
+                                    : () => _openOdontogramaPdf(
+                                        context,
+                                        ficha!.odontogramaId!,
+                                      ),
+                                onTap: () => context.push(
+                                  '/fichas/${widget.fichaId}/odontograma',
+                                  extra: paciente,
                                 ),
-                              )
-                            : const Icon(Icons.save_rounded),
-                        label: const Text('Guardar ficha'),
+                              ),
+                            ],
+                          ),
+                          FichaTabScaffold(
+                            children: [
+                              FichaModuleEntryCard(
+                                icon: FontAwesomeIcons.tooth,
+                                title: 'Periodontograma',
+                                subtitle:
+                                    'Consulta sondaje, margen, furcacion y hallazgos periodontales.',
+                                actionLabel: ficha?.periodontogramaId == null
+                                    ? 'Crear periodontograma'
+                                    : 'Abrir periodontograma',
+                                secondaryActionLabel: 'Abrir PDF',
+                                secondaryActionIcon:
+                                    Icons.picture_as_pdf_outlined,
+                                onSecondaryTap: ficha?.periodontogramaId == null
+                                    ? null
+                                    : () => _openPeriodontogramaPdf(
+                                        context,
+                                        ficha!.periodontogramaId!,
+                                      ),
+                                onTap: () => context.push(
+                                  '/fichas/${widget.fichaId}/periodontograma',
+                                  extra: paciente,
+                                ),
+                              ),
+                            ],
+                          ),
+                          RadiografiasTab(fichaId: widget.fichaId),
+                          RecetasTab(fichaId: widget.fichaId),
+                        ],
                       ),
                     ),
                   ],
@@ -409,6 +499,36 @@ class _FichaDetalleScreenState extends State<FichaDetalleScreen> {
     );
   }
 
+  Future<void> _openOdontogramaPdf(
+    BuildContext context,
+    int odontogramaId,
+  ) async {
+    final message = await context.read<OdontogramaProvider>().abrirPdf(
+      odontogramaId: odontogramaId,
+    );
+    if (!context.mounted || message == null) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  Future<void> _openPeriodontogramaPdf(
+    BuildContext context,
+    int periodontogramaId,
+  ) async {
+    final message = await context.read<PeriodontogramaProvider>().abrirPdf(
+      periodontogramaId: periodontogramaId,
+    );
+    if (!context.mounted || message == null) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
   String? _emptyToNull(String value) {
     final text = value.trim();
     return text.isEmpty ? null : text;
@@ -422,126 +542,5 @@ class _FichaDetalleScreenState extends State<FichaDetalleScreen> {
   double? _parseDouble(String value) {
     final text = value.trim().replaceAll(',', '.');
     return text.isEmpty ? null : double.tryParse(text);
-  }
-}
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.icon,
-    required this.children,
-    this.initiallyExpanded = true,
-  });
-
-  final String title;
-  final IconData icon;
-  final List<Widget> children;
-  final bool initiallyExpanded;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: ExpansionTile(
-        initiallyExpanded: initiallyExpanded,
-        leading: Icon(icon, color: AppColors.primary),
-        title: Text(
-          title,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: AppColors.inverted,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-        children: [
-          for (final child in children) ...[child, const SizedBox(height: 12)],
-        ],
-      ),
-    );
-  }
-}
-
-class _TextField extends StatelessWidget {
-  const _TextField({
-    required this.controller,
-    required this.label,
-    this.maxLines = 1,
-  });
-
-  final TextEditingController controller;
-  final String label;
-  final int maxLines;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      textInputAction: maxLines == 1
-          ? TextInputAction.next
-          : TextInputAction.newline,
-      decoration: InputDecoration(labelText: label),
-    );
-  }
-}
-
-class _NumberField extends StatelessWidget {
-  const _NumberField({required this.controller, required this.label});
-
-  final TextEditingController controller;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(labelText: label),
-    );
-  }
-}
-
-class _DecimalField extends StatelessWidget {
-  const _DecimalField({required this.controller, required this.label});
-
-  final TextEditingController controller;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(labelText: label),
-    );
-  }
-}
-
-class _SwitchTile extends StatelessWidget {
-  const _SwitchTile({
-    required this.title,
-    required this.value,
-    required this.onChanged,
-  });
-
-  final String title;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return SwitchListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(title),
-      value: value,
-      activeThumbColor: AppColors.primary,
-      onChanged: onChanged,
-    );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:odontologia_app/core/api_client.dart';
 import 'package:odontologia_app/models/periodontograma.dart';
+import 'package:path_provider/path_provider.dart';
 
 class PeriodontogramaDienteRequest {
   const PeriodontogramaDienteRequest({
@@ -105,5 +106,15 @@ class PeriodontogramaService {
       data: request.toJson(),
     );
     return Periodontograma.fromJson(response.data!);
+  }
+
+  Future<String> descargarPdf(int periodontogramaId) async {
+    final directory = await getTemporaryDirectory();
+    final filePath = '${directory.path}/periodontograma_$periodontogramaId.pdf';
+    await _apiClient.dio.download(
+      '/api/periodontogramas/$periodontogramaId/pdf',
+      filePath,
+    );
+    return filePath;
   }
 }

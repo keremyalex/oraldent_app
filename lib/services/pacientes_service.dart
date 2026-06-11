@@ -7,8 +7,8 @@ class PacienteRequest {
     required this.nombre,
     required this.apellidoPaterno,
     required this.celular,
+    required this.documentoIdentidad,
     this.apellidoMaterno,
-    this.documentoIdentidad,
     this.correo,
     this.fechaNacimiento,
     this.direccion,
@@ -18,8 +18,8 @@ class PacienteRequest {
   final String nombre;
   final String apellidoPaterno;
   final String celular;
+  final String documentoIdentidad;
   final String? apellidoMaterno;
-  final String? documentoIdentidad;
   final String? correo;
   final DateTime? fechaNacimiento;
   final String? direccion;

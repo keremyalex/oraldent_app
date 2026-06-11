@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:odontologia_app/core/api_client.dart';
 import 'package:odontologia_app/models/odontograma.dart';
 import 'package:odontologia_app/services/odontograma_service.dart';
@@ -238,6 +239,32 @@ class OdontogramaProvider extends ChangeNotifier {
       _isEditing = false;
       _hasChanges = false;
       return null;
+    } catch (error) {
+      return apiErrorMessage(error);
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> abrirPdf({int? odontogramaId}) async {
+    final id = odontogramaId ?? _odontograma?.id;
+    if (id == null) {
+      return 'No hay odontograma cargado.';
+    }
+
+    _isSaving = true;
+    notifyListeners();
+
+    try {
+      final filePath = await _odontogramaService.descargarPdf(id);
+      final result = await OpenFilex.open(filePath);
+      if (result.type == ResultType.done) {
+        return null;
+      }
+      return result.message.isEmpty
+          ? 'No se pudo abrir el PDF.'
+          : result.message;
     } catch (error) {
       return apiErrorMessage(error);
     } finally {

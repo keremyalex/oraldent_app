@@ -10,6 +10,8 @@ import 'package:odontologia_app/providers/horarios_provider.dart';
 import 'package:odontologia_app/providers/odontograma_provider.dart';
 import 'package:odontologia_app/providers/periodontograma_provider.dart';
 import 'package:odontologia_app/providers/pacientes_provider.dart';
+import 'package:odontologia_app/providers/radiografias_provider.dart';
+import 'package:odontologia_app/providers/recetas_provider.dart';
 import 'package:odontologia_app/providers/servicios_provider.dart';
 import 'package:odontologia_app/router/app_router.dart';
 import 'package:odontologia_app/services/auth_service.dart';
@@ -20,6 +22,8 @@ import 'package:odontologia_app/services/horarios_service.dart';
 import 'package:odontologia_app/services/odontograma_service.dart';
 import 'package:odontologia_app/services/periodontograma_service.dart';
 import 'package:odontologia_app/services/pacientes_service.dart';
+import 'package:odontologia_app/services/radiografias_service.dart';
+import 'package:odontologia_app/services/recetas_service.dart';
 import 'package:odontologia_app/services/session_storage.dart';
 import 'package:odontologia_app/services/servicios_service.dart';
 import 'package:odontologia_app/theme/app_theme.dart';
@@ -58,6 +62,12 @@ Future<void> main() async {
         ChangeNotifierProvider(
           create: (_) =>
               PeriodontogramaProvider(PeriodontogramaService(apiClient)),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => RecetasProvider(RecetasService(apiClient)),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => RadiografiasProvider(RadiografiasService(apiClient)),
         ),
         ChangeNotifierProvider(
           create: (_) => HorariosProvider(HorariosService(apiClient)),

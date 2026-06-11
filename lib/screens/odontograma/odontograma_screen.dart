@@ -70,9 +70,11 @@ class _OdontogramaScreenState extends State<OdontogramaScreen> {
         appBar: _OdontogramaAppBar(
           paciente: paciente,
           isLoading: provider.isLoading,
+          canOpenPdf: odontograma != null && !provider.isSaving,
           isEditing: provider.isEditing,
           onBack: () => _goBack(context),
           onRefresh: () => _loadOdontograma(context),
+          onOpenPdf: () => _openPdf(context),
           onEdit: () => context.read<OdontogramaProvider>().startEditing(),
         ),
         body: SafeArea(
@@ -121,6 +123,18 @@ class _OdontogramaScreenState extends State<OdontogramaScreen> {
     );
   }
 
+  Future<void> _openPdf(BuildContext context) async {
+    final message = await context.read<OdontogramaProvider>().abrirPdf();
+    if (!context.mounted) {
+      return;
+    }
+    if (message != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    }
+  }
+
   void _cancelEditing(BuildContext context) {
     context.read<OdontogramaProvider>().discardEditing();
     final odontograma = context.read<OdontogramaProvider>().odontograma;
@@ -154,18 +168,22 @@ class _OdontogramaAppBar extends StatelessWidget
     implements PreferredSizeWidget {
   const _OdontogramaAppBar({
     required this.isLoading,
+    required this.canOpenPdf,
     required this.isEditing,
     required this.onBack,
     required this.onRefresh,
+    required this.onOpenPdf,
     required this.onEdit,
     this.paciente,
   });
 
   final Paciente? paciente;
   final bool isLoading;
+  final bool canOpenPdf;
   final bool isEditing;
   final VoidCallback onBack;
   final VoidCallback onRefresh;
+  final VoidCallback onOpenPdf;
   final VoidCallback onEdit;
 
   @override
@@ -215,6 +233,11 @@ class _OdontogramaAppBar extends StatelessWidget
           onPressed: isLoading ? null : onRefresh,
           icon: const Icon(Icons.refresh_rounded),
           tooltip: 'Actualizar',
+        ),
+        IconButton(
+          onPressed: canOpenPdf ? onOpenPdf : null,
+          icon: const Icon(Icons.picture_as_pdf_outlined),
+          tooltip: 'Abrir PDF',
         ),
         IconButton(
           onPressed: isLoading || isEditing ? null : onEdit,

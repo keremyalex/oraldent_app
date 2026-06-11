@@ -1,5 +1,6 @@
 import 'package:odontologia_app/core/api_client.dart';
 import 'package:odontologia_app/models/odontograma.dart';
+import 'package:path_provider/path_provider.dart';
 
 class OdontogramaDienteRequest {
   const OdontogramaDienteRequest({
@@ -108,5 +109,15 @@ class OdontogramaService {
       data: {'color': color, 'descripcion': descripcion},
     );
     return Odontograma.fromJson(response.data!);
+  }
+
+  Future<String> descargarPdf(int odontogramaId) async {
+    final directory = await getTemporaryDirectory();
+    final filePath = '${directory.path}/odontograma_$odontogramaId.pdf';
+    await _apiClient.dio.download(
+      '/api/odontogramas/$odontogramaId/pdf',
+      filePath,
+    );
+    return filePath;
   }
 }

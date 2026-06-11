@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:odontologia_app/core/api_client.dart';
 import 'package:odontologia_app/models/periodontograma.dart';
 import 'package:odontologia_app/services/periodontograma_service.dart';
@@ -120,6 +121,32 @@ class PeriodontogramaProvider extends ChangeNotifier {
         request: request,
       );
       return null;
+    } catch (error) {
+      return apiErrorMessage(error);
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> abrirPdf({int? periodontogramaId}) async {
+    final id = periodontogramaId ?? _periodontograma?.id;
+    if (id == null) {
+      return 'No hay periodontograma cargado.';
+    }
+
+    _isSaving = true;
+    notifyListeners();
+
+    try {
+      final filePath = await _service.descargarPdf(id);
+      final result = await OpenFilex.open(filePath);
+      if (result.type == ResultType.done) {
+        return null;
+      }
+      return result.message.isEmpty
+          ? 'No se pudo abrir el PDF.'
+          : result.message;
     } catch (error) {
       return apiErrorMessage(error);
     } finally {

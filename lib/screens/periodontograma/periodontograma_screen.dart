@@ -74,8 +74,10 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
         appBar: _PeriodontogramaAppBar(
           paciente: paciente,
           isLoading: provider.isLoading,
+          canOpenPdf: periodontograma != null && !provider.isSaving,
           onBack: () => _goBack(context),
           onRefresh: () => _loadPeriodontograma(context),
+          onOpenPdf: () => _openPdf(context),
         ),
         body: SafeArea(
           child: _PeriodontogramaBody(
@@ -131,6 +133,18 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
     );
   }
 
+  Future<void> _openPdf(BuildContext context) async {
+    final message = await context.read<PeriodontogramaProvider>().abrirPdf();
+    if (!context.mounted) {
+      return;
+    }
+    if (message != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    }
+  }
+
   Future<void> _openDienteSheet(PeriodontogramaDiente diente) async {
     await showModalBottomSheet<void>(
       context: context,
@@ -178,15 +192,19 @@ class _PeriodontogramaAppBar extends StatelessWidget
     implements PreferredSizeWidget {
   const _PeriodontogramaAppBar({
     required this.isLoading,
+    required this.canOpenPdf,
     required this.onBack,
     required this.onRefresh,
+    required this.onOpenPdf,
     this.paciente,
   });
 
   final Paciente? paciente;
   final bool isLoading;
+  final bool canOpenPdf;
   final VoidCallback onBack;
   final VoidCallback onRefresh;
+  final VoidCallback onOpenPdf;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -234,6 +252,11 @@ class _PeriodontogramaAppBar extends StatelessWidget
           onPressed: isLoading ? null : onRefresh,
           icon: const Icon(Icons.refresh_rounded),
           tooltip: 'Actualizar',
+        ),
+        IconButton(
+          onPressed: canOpenPdf ? onOpenPdf : null,
+          icon: const Icon(Icons.picture_as_pdf_outlined),
+          tooltip: 'Abrir PDF',
         ),
       ],
     );

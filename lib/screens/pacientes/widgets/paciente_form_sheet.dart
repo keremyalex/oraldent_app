@@ -7,10 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class PacienteFormSheet extends StatefulWidget {
-  const PacienteFormSheet({
-    this.paciente,
-    super.key,
-  });
+  const PacienteFormSheet({this.paciente, super.key});
 
   final Paciente? paciente;
 
@@ -121,6 +118,7 @@ class _PacienteFormSheetState extends State<PacienteFormSheet> {
                 icon: Icons.badge_outlined,
                 keyboardType: TextInputType.number,
                 enabled: !provider.isSaving,
+                validator: _requiredValidator,
               ),
               const SizedBox(height: 14),
               _PatientTextField(
@@ -223,7 +221,7 @@ class _PacienteFormSheetState extends State<PacienteFormSheet> {
       apellidoPaterno: _apellidoPaternoController.text.trim(),
       apellidoMaterno: _emptyToNull(_apellidoMaternoController.text),
       celular: _celularController.text.trim(),
-      documentoIdentidad: _emptyToNull(_documentoController.text),
+      documentoIdentidad: _documentoController.text.trim(),
       correo: _emptyToNull(_correoController.text),
       fechaNacimiento: _fechaNacimiento,
       direccion: _emptyToNull(_direccionController.text),
@@ -232,9 +230,9 @@ class _PacienteFormSheetState extends State<PacienteFormSheet> {
 
     final provider = context.read<PacientesProvider>();
     final result = await provider.savePaciente(
-          id: widget.paciente?.id,
-          request: request,
-        );
+      id: widget.paciente?.id,
+      request: request,
+    );
 
     if (!context.mounted) {
       return;
@@ -326,10 +324,7 @@ class _PatientTextField extends StatelessWidget {
       enabled: enabled,
       keyboardType: keyboardType,
       validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-      ),
+      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
     );
   }
 }
@@ -369,17 +364,17 @@ class _DateFieldButton extends StatelessWidget {
                 Text(
                   'Fecha de nacimiento',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: AppColors.secondary,
-                        fontSize: 12,
-                      ),
+                    color: AppColors.secondary,
+                    fontSize: 12,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   value == null ? 'Sin fecha' : _formatDate(value!),
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: AppColors.inverted,
-                        fontSize: 16,
-                      ),
+                    color: AppColors.inverted,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -419,7 +414,8 @@ class _PatientPhotoPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final hasCurrentPhoto = currentPhotoUrl != null && currentPhotoUrl!.isNotEmpty;
+    final hasCurrentPhoto =
+        currentPhotoUrl != null && currentPhotoUrl!.isNotEmpty;
 
     return Container(
       padding: const EdgeInsets.all(14),
