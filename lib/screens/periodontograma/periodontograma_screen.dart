@@ -7,6 +7,7 @@ import 'package:odontologia_app/screens/periodontograma/widgets/periodontograma_
 import 'package:odontologia_app/screens/periodontograma/widgets/periodontograma_diente_sheet.dart';
 import 'package:odontologia_app/screens/periodontograma/widgets/periodontograma_message.dart';
 import 'package:odontologia_app/screens/periodontograma/widgets/periodontograma_summary_band.dart';
+import 'package:odontologia_app/screens/periodontograma/widgets/periodontograma_voice_sheet.dart';
 import 'package:odontologia_app/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 
@@ -78,6 +79,9 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
           onBack: () => _goBack(context),
           onRefresh: () => _loadPeriodontograma(context),
           onOpenPdf: () => _openPdf(context),
+          onOpenVoice: periodontograma == null
+              ? null
+              : () => _openVoiceSheet(context),
         ),
         body: SafeArea(
           child: _PeriodontogramaBody(
@@ -145,6 +149,24 @@ class _PeriodontogramaScreenState extends State<PeriodontogramaScreen> {
     }
   }
 
+  Future<void> _openVoiceSheet(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: AppColors.neutral,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        return ChangeNotifierProvider.value(
+          value: context.read<PeriodontogramaProvider>(),
+          child: const PeriodontogramaVoiceSheet(),
+        );
+      },
+    );
+  }
+
   Future<void> _openDienteSheet(PeriodontogramaDiente diente) async {
     await showModalBottomSheet<void>(
       context: context,
@@ -196,6 +218,7 @@ class _PeriodontogramaAppBar extends StatelessWidget
     required this.onBack,
     required this.onRefresh,
     required this.onOpenPdf,
+    required this.onOpenVoice,
     this.paciente,
   });
 
@@ -205,6 +228,7 @@ class _PeriodontogramaAppBar extends StatelessWidget
   final VoidCallback onBack;
   final VoidCallback onRefresh;
   final VoidCallback onOpenPdf;
+  final VoidCallback? onOpenVoice;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -252,6 +276,11 @@ class _PeriodontogramaAppBar extends StatelessWidget
           onPressed: isLoading ? null : onRefresh,
           icon: const Icon(Icons.refresh_rounded),
           tooltip: 'Actualizar',
+        ),
+        IconButton(
+          onPressed: isLoading ? null : onOpenVoice,
+          icon: const Icon(Icons.mic_none_rounded),
+          tooltip: 'Dictado por voz',
         ),
         IconButton(
           onPressed: canOpenPdf ? onOpenPdf : null,

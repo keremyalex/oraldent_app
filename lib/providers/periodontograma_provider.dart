@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:odontologia_app/core/api_client.dart';
 import 'package:odontologia_app/models/periodontograma.dart';
+import 'package:odontologia_app/models/periodontograma_ai.dart';
 import 'package:odontologia_app/services/periodontograma_service.dart';
 
 class PeriodontogramaProvider extends ChangeNotifier {
@@ -129,6 +130,70 @@ class PeriodontogramaProvider extends ChangeNotifier {
     }
   }
 
+  Future<String?> aplicarResultadoIa(PeriodontogramaAiResult result) async {
+    if (_periodontograma == null) {
+      return 'No hay periodontograma cargado.';
+    }
+    if (!result.hasData) {
+      return 'La IA no detecto datos para aplicar.';
+    }
+
+    _isSaving = true;
+    notifyListeners();
+
+    try {
+      var current = _periodontograma!;
+      for (final entry in result.byTooth.entries) {
+        final numeroFdi = entry.key;
+        final items = entry.value;
+        var diente = current.dientePorFdi(numeroFdi);
+        if (diente == null) {
+          continue;
+        }
+
+        final dienteRequest = _buildDienteRequestFromAi(diente, items);
+        if (dienteRequest != null) {
+          current = await _service.actualizarDiente(
+            periodontogramaId: current.id,
+            numeroFdi: numeroFdi,
+            request: dienteRequest,
+          );
+          diente = current.dientePorFdi(numeroFdi);
+          if (diente == null) {
+            continue;
+          }
+        }
+
+        final siteChanges = _buildSitioChangesFromAi(diente, items);
+        for (final change in siteChanges.entries) {
+          final currentDiente = diente;
+          if (currentDiente == null) {
+            break;
+          }
+          final sitio = currentDiente.sitio(change.key);
+          current = await _service.actualizarSitio(
+            periodontogramaId: current.id,
+            numeroFdi: numeroFdi,
+            sitio: change.key,
+            request: change.value(sitio),
+          );
+          diente = current.dientePorFdi(numeroFdi);
+          if (diente == null) {
+            break;
+          }
+        }
+      }
+
+      _periodontograma = current;
+      return null;
+    } catch (error) {
+      return apiErrorMessage(error);
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
   Future<String?> abrirPdf({int? periodontogramaId}) async {
     final id = periodontogramaId ?? _periodontograma?.id;
     if (id == null) {
@@ -153,5 +218,191 @@ class PeriodontogramaProvider extends ChangeNotifier {
       _isSaving = false;
       notifyListeners();
     }
+  }
+
+  PeriodontogramaDienteRequest? _buildDienteRequestFromAi(
+    PeriodontogramaDiente diente,
+    List<PeriodontogramaAiItem> items,
+  ) {
+    var movilidad = diente.movilidad;
+    var furcacionVestibular = diente.furcacionVestibular;
+    var furcacionPalatinaLingual = diente.furcacionPalatinaLingual;
+    var changed = false;
+
+    for (final item in items) {
+      if (item.action == 'mobility' && item.grade != null) {
+        movilidad = item.grade!.clamp(0, 3);
+        changed = true;
+      }
+      if (item.action == 'furca' &&
+          item.grade != null &&
+          diente.permiteFurcacion) {
+        final furcacion = _furcacionFromGrade(item.grade!);
+        furcacionVestibular = furcacion;
+        furcacionPalatinaLingual = furcacion;
+        changed = true;
+      }
+    }
+
+    if (!changed) {
+      return null;
+    }
+
+    return PeriodontogramaDienteRequest(
+      ausente: diente.ausente,
+      implante: diente.implante,
+      movilidad: movilidad,
+      furcacionVestibular: diente.permiteFurcacion
+          ? furcacionVestibular
+          : PeriodontogramaFurcacion.ninguna,
+      furcacionPalatinaLingual: diente.permiteFurcacion
+          ? furcacionPalatinaLingual
+          : PeriodontogramaFurcacion.ninguna,
+      observacion: diente.observacion,
+    );
+  }
+
+  Map<String, PeriodontogramaSitioRequest Function(PeriodontogramaSitio)>
+  _buildSitioChangesFromAi(
+    PeriodontogramaDiente diente,
+    List<PeriodontogramaAiItem> items,
+  ) {
+    final builders =
+        <String, PeriodontogramaSitioRequest Function(PeriodontogramaSitio)>{};
+    final affectedByProbing = <String>{};
+
+    void addBuilder(
+      String sitio,
+      PeriodontogramaSitioRequest Function(PeriodontogramaSitio) builder,
+    ) {
+      final previous = builders[sitio];
+      builders[sitio] = previous == null
+          ? builder
+          : (current) => builder(_requestAsSitio(sitio, previous(current)));
+    }
+
+    for (final item in items) {
+      if (item.action != 'probing') {
+        continue;
+      }
+      final sitios = _sitiosForSurface(item.surface);
+      if (sitios == null || item.values.length < 3) {
+        continue;
+      }
+      for (var index = 0; index < sitios.length; index += 1) {
+        final sitio = sitios[index];
+        final profundidad = item.values[index].clamp(0, 15);
+        affectedByProbing.add(sitio);
+        addBuilder(sitio, (current) {
+          return PeriodontogramaSitioRequest(
+            sangradoSondaje: current.sangradoSondaje,
+            placa: current.placa,
+            supuracion: current.supuracion,
+            margenGingivalMm: current.margenGingivalMm,
+            profundidadSondajeMm: profundidad,
+            observacion: current.observacion,
+          );
+        });
+      }
+    }
+
+    final defaultSites = affectedByProbing.isEmpty
+        ? PeriodontogramaSitioTipo.all
+        : affectedByProbing.toList();
+
+    for (final item in items) {
+      if (item.action == 'bleeding' && item.positive != null) {
+        for (final sitio in defaultSites) {
+          addBuilder(sitio, (current) {
+            return PeriodontogramaSitioRequest(
+              sangradoSondaje: item.positive!,
+              placa: current.placa,
+              supuracion: current.supuracion,
+              margenGingivalMm: current.margenGingivalMm,
+              profundidadSondajeMm: current.profundidadSondajeMm,
+              observacion: current.observacion,
+            );
+          });
+        }
+      }
+      if (item.action == 'plaque' && item.positive != null) {
+        for (final sitio in defaultSites) {
+          addBuilder(sitio, (current) {
+            return PeriodontogramaSitioRequest(
+              sangradoSondaje: current.sangradoSondaje,
+              placa: item.positive!,
+              supuracion: current.supuracion,
+              margenGingivalMm: current.margenGingivalMm,
+              profundidadSondajeMm: current.profundidadSondajeMm,
+              observacion: current.observacion,
+            );
+          });
+        }
+      }
+      if (item.action == 'suppuration' && item.positive != null) {
+        for (final sitio in defaultSites) {
+          addBuilder(sitio, (current) {
+            return PeriodontogramaSitioRequest(
+              sangradoSondaje: current.sangradoSondaje,
+              placa: current.placa,
+              supuracion: item.positive!,
+              margenGingivalMm: current.margenGingivalMm,
+              profundidadSondajeMm: current.profundidadSondajeMm,
+              observacion: current.observacion,
+            );
+          });
+        }
+      }
+      if (item.action == 'recession' && item.mm != null) {
+        for (final sitio in defaultSites) {
+          addBuilder(sitio, (current) {
+            return PeriodontogramaSitioRequest(
+              sangradoSondaje: current.sangradoSondaje,
+              placa: current.placa,
+              supuracion: current.supuracion,
+              margenGingivalMm: item.mm!.clamp(-10, 15),
+              profundidadSondajeMm: current.profundidadSondajeMm,
+              observacion: current.observacion,
+            );
+          });
+        }
+      }
+    }
+
+    return builders;
+  }
+
+  PeriodontogramaSitio _requestAsSitio(
+    String sitio,
+    PeriodontogramaSitioRequest request,
+  ) {
+    return PeriodontogramaSitio(
+      id: 0,
+      sitio: sitio,
+      sangradoSondaje: request.sangradoSondaje,
+      placa: request.placa,
+      supuracion: request.supuracion,
+      margenGingivalMm: request.margenGingivalMm,
+      profundidadSondajeMm: request.profundidadSondajeMm,
+      nivelInsercionMm: request.profundidadSondajeMm - request.margenGingivalMm,
+      observacion: request.observacion,
+    );
+  }
+
+  List<String>? _sitiosForSurface(String? surface) {
+    return switch (surface) {
+      'vestibular' => PeriodontogramaSitioGrupo.vestibular.sitios,
+      'lingual' => PeriodontogramaSitioGrupo.palatinaLingual.sitios,
+      _ => null,
+    };
+  }
+
+  String _furcacionFromGrade(int grade) {
+    return switch (grade) {
+      <= 0 => PeriodontogramaFurcacion.ninguna,
+      1 => PeriodontogramaFurcacion.gradoI,
+      2 => PeriodontogramaFurcacion.gradoII,
+      _ => PeriodontogramaFurcacion.gradoIII,
+    };
   }
 }
