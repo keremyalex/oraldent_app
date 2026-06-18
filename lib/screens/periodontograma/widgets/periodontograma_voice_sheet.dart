@@ -272,16 +272,28 @@ class _PeriodontogramaVoiceSheetState extends State<PeriodontogramaVoiceSheet> {
   }
 
   String _actionText(PeriodontogramaAiItem item) {
+    final target = _targetText(item);
     return switch (item.action) {
       'probing' => '${item.surface ?? 'superficie'} ${item.values.join(' ')}',
-      'bleeding' => 'sangrado ${item.positive == true ? 'si' : 'no'}',
-      'plaque' => 'placa ${item.positive == true ? 'si' : 'no'}',
-      'suppuration' => 'supuracion ${item.positive == true ? 'si' : 'no'}',
+      'bleeding' => 'sangrado$target ${item.positive == true ? 'si' : 'no'}',
+      'plaque' => 'placa$target ${item.positive == true ? 'si' : 'no'}',
+      'suppuration' =>
+        'supuracion$target ${item.positive == true ? 'si' : 'no'}',
       'mobility' => 'movilidad ${item.grade}',
-      'furca' => 'furca ${item.grade}',
-      'recession' => 'margen/recesion ${item.mm} mm',
+      'furca' => 'furca$target ${item.grade}',
+      'recession' => 'margen/recesion$target ${item.mm} mm',
       _ => '',
     };
+  }
+
+  String _targetText(PeriodontogramaAiItem item) {
+    if (item.sites.isNotEmpty) {
+      return ' ${item.sites.join(', ')}';
+    }
+    if (item.surface != null) {
+      return ' ${item.surface}';
+    }
+    return '';
   }
 
   Future<void> _startSession() async {
@@ -797,15 +809,27 @@ class _ActionChip extends StatelessWidget {
   }
 
   String get _label {
+    final target = _targetText;
     return switch (item.action) {
       'probing' => '${item.surface}: ${item.values.join(' ')}',
-      'bleeding' => 'sangrado: ${item.positive == true ? 'si' : 'no'}',
-      'plaque' => 'placa: ${item.positive == true ? 'si' : 'no'}',
-      'suppuration' => 'supuracion: ${item.positive == true ? 'si' : 'no'}',
+      'bleeding' => 'sangrado$target: ${item.positive == true ? 'si' : 'no'}',
+      'plaque' => 'placa$target: ${item.positive == true ? 'si' : 'no'}',
+      'suppuration' =>
+        'supuracion$target: ${item.positive == true ? 'si' : 'no'}',
       'mobility' => 'movilidad: ${item.grade}',
-      'furca' => 'furca: ${item.grade}',
-      'recession' => 'margen/recesion: ${item.mm} mm',
+      'furca' => 'furca$target: ${item.grade}',
+      'recession' => 'margen/recesion$target: ${item.mm} mm',
       _ => item.action,
     };
+  }
+
+  String get _targetText {
+    if (item.sites.isNotEmpty) {
+      return ' ${item.sites.join(', ')}';
+    }
+    if (item.surface != null && item.action != 'probing') {
+      return ' ${item.surface}';
+    }
+    return '';
   }
 }

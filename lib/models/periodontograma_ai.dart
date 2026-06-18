@@ -86,6 +86,7 @@ class PeriodontogramaAiItem {
     required this.action,
     this.tooth,
     this.surface,
+    this.sites = const [],
     this.values = const [],
     this.positive,
     this.grade,
@@ -97,6 +98,9 @@ class PeriodontogramaAiItem {
       action: json['action'] as String? ?? '',
       tooth: json['tooth'] as int?,
       surface: json['surface'] as String?,
+      sites: (json['sites'] as List<dynamic>? ?? const [])
+          .map((value) => value.toString())
+          .toList(),
       values: (json['values'] as List<dynamic>? ?? const [])
           .whereType<num>()
           .map((value) => value.toInt())
@@ -110,6 +114,7 @@ class PeriodontogramaAiItem {
   final String action;
   final int? tooth;
   final String? surface;
+  final List<String> sites;
   final List<int> values;
   final bool? positive;
   final int? grade;

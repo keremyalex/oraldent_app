@@ -238,8 +238,15 @@ class PeriodontogramaProvider extends ChangeNotifier {
           item.grade != null &&
           diente.permiteFurcacion) {
         final furcacion = _furcacionFromGrade(item.grade!);
-        furcacionVestibular = furcacion;
-        furcacionPalatinaLingual = furcacion;
+        switch (item.surface) {
+          case 'vestibular':
+            furcacionVestibular = furcacion;
+          case 'lingual':
+            furcacionPalatinaLingual = furcacion;
+          default:
+            furcacionVestibular = furcacion;
+            furcacionPalatinaLingual = furcacion;
+        }
         changed = true;
       }
     }
@@ -306,13 +313,10 @@ class PeriodontogramaProvider extends ChangeNotifier {
       }
     }
 
-    final defaultSites = affectedByProbing.isEmpty
-        ? PeriodontogramaSitioTipo.all
-        : affectedByProbing.toList();
-
     for (final item in items) {
+      final targetSites = _targetSitesForItem(item, affectedByProbing);
       if (item.action == 'bleeding' && item.positive != null) {
-        for (final sitio in defaultSites) {
+        for (final sitio in targetSites) {
           addBuilder(sitio, (current) {
             return PeriodontogramaSitioRequest(
               sangradoSondaje: item.positive!,
@@ -326,7 +330,7 @@ class PeriodontogramaProvider extends ChangeNotifier {
         }
       }
       if (item.action == 'plaque' && item.positive != null) {
-        for (final sitio in defaultSites) {
+        for (final sitio in targetSites) {
           addBuilder(sitio, (current) {
             return PeriodontogramaSitioRequest(
               sangradoSondaje: current.sangradoSondaje,
@@ -340,7 +344,7 @@ class PeriodontogramaProvider extends ChangeNotifier {
         }
       }
       if (item.action == 'suppuration' && item.positive != null) {
-        for (final sitio in defaultSites) {
+        for (final sitio in targetSites) {
           addBuilder(sitio, (current) {
             return PeriodontogramaSitioRequest(
               sangradoSondaje: current.sangradoSondaje,
@@ -354,7 +358,7 @@ class PeriodontogramaProvider extends ChangeNotifier {
         }
       }
       if (item.action == 'recession' && item.mm != null) {
-        for (final sitio in defaultSites) {
+        for (final sitio in targetSites) {
           addBuilder(sitio, (current) {
             return PeriodontogramaSitioRequest(
               sangradoSondaje: current.sangradoSondaje,
@@ -370,6 +374,31 @@ class PeriodontogramaProvider extends ChangeNotifier {
     }
 
     return builders;
+  }
+
+  List<String> _targetSitesForItem(
+    PeriodontogramaAiItem item,
+    Set<String> affectedByProbing,
+  ) {
+    final exactSites = item.sites
+        .map(_sitioFromAi)
+        .whereType<String>()
+        .toSet()
+        .toList();
+    if (exactSites.isNotEmpty) {
+      return exactSites;
+    }
+
+    final surfaceSites = _sitiosForSurface(item.surface);
+    if (surfaceSites != null) {
+      return surfaceSites;
+    }
+
+    if (affectedByProbing.isNotEmpty) {
+      return affectedByProbing.toList();
+    }
+
+    return PeriodontogramaSitioTipo.all;
   }
 
   PeriodontogramaSitio _requestAsSitio(
@@ -393,6 +422,21 @@ class PeriodontogramaProvider extends ChangeNotifier {
     return switch (surface) {
       'vestibular' => PeriodontogramaSitioGrupo.vestibular.sitios,
       'lingual' => PeriodontogramaSitioGrupo.palatinaLingual.sitios,
+      _ => null,
+    };
+  }
+
+  String? _sitioFromAi(String value) {
+    final normalized = value.toLowerCase().replaceAll('_', '');
+    return switch (normalized) {
+      'mesiovestibular' => PeriodontogramaSitioTipo.mesioVestibular,
+      'vestibular' => PeriodontogramaSitioTipo.vestibular,
+      'distovestibular' => PeriodontogramaSitioTipo.distoVestibular,
+      'mesiopalatino' ||
+      'mesiolingual' => PeriodontogramaSitioTipo.mesioPalatino,
+      'palatino' || 'lingual' => PeriodontogramaSitioTipo.palatino,
+      'distopalatino' ||
+      'distolingual' => PeriodontogramaSitioTipo.distoPalatino,
       _ => null,
     };
   }
