@@ -289,7 +289,7 @@ class PeriodontogramaProvider extends ChangeNotifier {
     }
 
     for (final item in items) {
-      if (item.action != 'probing') {
+      if (item.action != 'probing' && item.action != 'gingival_margin') {
         continue;
       }
       final sitios = _sitiosForSurface(item.surface);
@@ -298,14 +298,19 @@ class PeriodontogramaProvider extends ChangeNotifier {
       }
       for (var index = 0; index < sitios.length; index += 1) {
         final sitio = sitios[index];
-        final profundidad = item.values[index].clamp(0, 15);
         affectedByProbing.add(sitio);
         addBuilder(sitio, (current) {
+          final profundidad = item.action == 'probing'
+              ? item.values[index].clamp(0, 15)
+              : current.profundidadSondajeMm;
+          final margen = item.action == 'gingival_margin'
+              ? item.values[index].clamp(-10, 15)
+              : current.margenGingivalMm;
           return PeriodontogramaSitioRequest(
             sangradoSondaje: current.sangradoSondaje,
             placa: current.placa,
             supuracion: current.supuracion,
-            margenGingivalMm: current.margenGingivalMm,
+            margenGingivalMm: margen,
             profundidadSondajeMm: profundidad,
             observacion: current.observacion,
           );

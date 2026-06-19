@@ -275,6 +275,7 @@ class _PeriodontogramaVoiceSheetState extends State<PeriodontogramaVoiceSheet> {
     final target = _targetText(item);
     return switch (item.action) {
       'probing' => '${item.surface ?? 'superficie'} ${item.values.join(' ')}',
+      'gingival_margin' => 'margen gingival$target ${item.values.join(' ')}',
       'bleeding' => 'sangrado$target ${item.positive == true ? 'si' : 'no'}',
       'plaque' => 'placa$target ${item.positive == true ? 'si' : 'no'}',
       'suppuration' =>
@@ -812,6 +813,7 @@ class _ActionChip extends StatelessWidget {
     final target = _targetText;
     return switch (item.action) {
       'probing' => '${item.surface}: ${item.values.join(' ')}',
+      'gingival_margin' => 'margen gingival$target: ${item.values.join(' ')}',
       'bleeding' => 'sangrado$target: ${item.positive == true ? 'si' : 'no'}',
       'plaque' => 'placa$target: ${item.positive == true ? 'si' : 'no'}',
       'suppuration' =>
