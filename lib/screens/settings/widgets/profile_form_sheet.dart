@@ -6,10 +6,7 @@ import 'package:odontologia_app/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 
 class ProfileFormSheet extends StatefulWidget {
-  const ProfileFormSheet({
-    required this.usuario,
-    super.key,
-  });
+  const ProfileFormSheet({required this.usuario, super.key});
 
   final UsuarioAuth usuario;
 
@@ -61,12 +58,25 @@ class _ProfileFormSheetState extends State<ProfileFormSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Editar datos',
-                style: textTheme.displayLarge?.copyWith(
-                  fontSize: 24,
-                  color: AppColors.inverted,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Editar datos',
+                      style: textTheme.displayLarge?.copyWith(
+                        fontSize: 24,
+                        color: AppColors.inverted,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: auth.isLoading
+                        ? null
+                        : () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                    tooltip: 'Cerrar sin guardar',
+                  ),
+                ],
               ),
               const SizedBox(height: 18),
               _ProfileTextField(
@@ -194,10 +204,7 @@ class _ProfileFormSheetState extends State<ProfileFormSheet> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -231,10 +238,7 @@ class _ProfileTextField extends StatelessWidget {
       enabled: enabled,
       keyboardType: keyboardType,
       validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-      ),
+      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
     );
   }
 }

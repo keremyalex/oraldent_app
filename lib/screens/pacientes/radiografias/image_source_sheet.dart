@@ -15,6 +15,21 @@ Future<ImageSource?> chooseImageSource(BuildContext context) {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Seleccionar imagen',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                    tooltip: 'Cancelar',
+                  ),
+                ],
+              ),
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
                 title: const Text('Galeria'),

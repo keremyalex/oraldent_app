@@ -6,10 +6,7 @@ import 'package:odontologia_app/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 
 class HorarioFormSheet extends StatefulWidget {
-  const HorarioFormSheet({
-    this.horario,
-    super.key,
-  });
+  const HorarioFormSheet({this.horario, super.key});
 
   final HorarioAtencion? horario;
 
@@ -67,12 +64,25 @@ class _HorarioFormSheetState extends State<HorarioFormSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              widget.horario == null ? 'Nuevo horario' : 'Editar horario',
-              style: textTheme.displayLarge?.copyWith(
-                fontSize: 24,
-                color: AppColors.inverted,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.horario == null ? 'Nuevo horario' : 'Editar horario',
+                    style: textTheme.displayLarge?.copyWith(
+                      fontSize: 24,
+                      color: AppColors.inverted,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: provider.isSaving
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded),
+                  tooltip: 'Cerrar sin guardar',
+                ),
+              ],
             ),
             const SizedBox(height: 18),
             DropdownButtonFormField<String>(
@@ -105,12 +115,12 @@ class _HorarioFormSheetState extends State<HorarioFormSheet> {
                     onTap: provider.isSaving
                         ? null
                         : () => _pickTime(
-                              context: context,
-                              current: _horaInicio,
-                              onPicked: (value) {
-                                setState(() => _horaInicio = value);
-                              },
-                            ),
+                            context: context,
+                            current: _horaInicio,
+                            onPicked: (value) {
+                              setState(() => _horaInicio = value);
+                            },
+                          ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -121,12 +131,12 @@ class _HorarioFormSheetState extends State<HorarioFormSheet> {
                     onTap: provider.isSaving
                         ? null
                         : () => _pickTime(
-                              context: context,
-                              current: _horaFin,
-                              onPicked: (value) {
-                                setState(() => _horaFin = value);
-                              },
-                            ),
+                            context: context,
+                            current: _horaFin,
+                            onPicked: (value) {
+                              setState(() => _horaFin = value);
+                            },
+                          ),
                   ),
                 ),
               ],
@@ -220,9 +230,9 @@ class _HorarioFormSheetState extends State<HorarioFormSheet> {
     );
 
     final message = await context.read<HorariosProvider>().save(
-          id: widget.horario?.id,
-          request: request,
-        );
+      id: widget.horario?.id,
+      request: request,
+    );
 
     if (!context.mounted) {
       return;
@@ -234,10 +244,7 @@ class _HorarioFormSheetState extends State<HorarioFormSheet> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 }
@@ -270,17 +277,17 @@ class _TimeButton extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppColors.secondary,
-                  fontSize: 12,
-                ),
+              color: AppColors.secondary,
+              fontSize: 12,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppColors.inverted,
-                  fontSize: 16,
-                ),
+              color: AppColors.inverted,
+              fontSize: 16,
+            ),
           ),
         ],
       ),

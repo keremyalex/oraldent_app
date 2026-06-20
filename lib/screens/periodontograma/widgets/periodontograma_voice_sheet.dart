@@ -115,6 +115,11 @@ class _PeriodontogramaVoiceSheetState extends State<PeriodontogramaVoiceSheet> {
                     ],
                   ),
                 ),
+                IconButton(
+                  onPressed: _isStoppingSegment ? null : _closeSheet,
+                  icon: const Icon(Icons.close_rounded),
+                  tooltip: 'Cerrar dictado',
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -512,6 +517,15 @@ class _PeriodontogramaVoiceSheetState extends State<PeriodontogramaVoiceSheet> {
       _currentDb = -160;
     });
     await _finishSegment(restart: false, processIfShort: true);
+  }
+
+  Future<void> _closeSheet() async {
+    if (_isMicActive) {
+      await _stopSession();
+    }
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   Future<void> _applyResult() async {

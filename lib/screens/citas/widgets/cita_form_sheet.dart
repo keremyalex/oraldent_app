@@ -101,12 +101,25 @@ class _CitaFormSheetState extends State<CitaFormSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                _isEditing ? 'Reprogramar cita' : 'Registrar cita',
-                style: textTheme.displayLarge?.copyWith(
-                  fontSize: 24,
-                  color: AppColors.inverted,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _isEditing ? 'Reprogramar cita' : 'Registrar cita',
+                      style: textTheme.displayLarge?.copyWith(
+                        fontSize: 24,
+                        color: AppColors.inverted,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: citasProvider.isSaving
+                        ? null
+                        : () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                    tooltip: 'Cerrar sin guardar',
+                  ),
+                ],
               ),
               const SizedBox(height: 18),
               DropdownButtonFormField<int>(

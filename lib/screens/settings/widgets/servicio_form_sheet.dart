@@ -6,10 +6,7 @@ import 'package:odontologia_app/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 
 class ServicioFormSheet extends StatefulWidget {
-  const ServicioFormSheet({
-    this.servicio,
-    super.key,
-  });
+  const ServicioFormSheet({this.servicio, super.key});
 
   final Servicio? servicio;
 
@@ -52,12 +49,27 @@ class _ServicioFormSheetState extends State<ServicioFormSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                widget.servicio == null ? 'Nuevo servicio' : 'Editar servicio',
-                style: textTheme.displayLarge?.copyWith(
-                  fontSize: 24,
-                  color: AppColors.inverted,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.servicio == null
+                          ? 'Nuevo servicio'
+                          : 'Editar servicio',
+                      style: textTheme.displayLarge?.copyWith(
+                        fontSize: 24,
+                        color: AppColors.inverted,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: provider.isSaving
+                        ? null
+                        : () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                    tooltip: 'Cerrar sin guardar',
+                  ),
+                ],
               ),
               const SizedBox(height: 18),
               TextFormField(
@@ -125,9 +137,9 @@ class _ServicioFormSheetState extends State<ServicioFormSheet> {
     );
 
     final message = await context.read<ServiciosProvider>().save(
-          id: widget.servicio?.id,
-          request: request,
-        );
+      id: widget.servicio?.id,
+      request: request,
+    );
 
     if (!context.mounted) {
       return;
@@ -139,10 +151,7 @@ class _ServicioFormSheetState extends State<ServicioFormSheet> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 }

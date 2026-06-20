@@ -70,14 +70,27 @@ class _PacienteFormSheetState extends State<PacienteFormSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                widget.paciente == null
-                    ? 'Registrar paciente'
-                    : 'Editar paciente',
-                style: textTheme.displayLarge?.copyWith(
-                  fontSize: 24,
-                  color: AppColors.inverted,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.paciente == null
+                          ? 'Registrar paciente'
+                          : 'Editar paciente',
+                      style: textTheme.displayLarge?.copyWith(
+                        fontSize: 24,
+                        color: AppColors.inverted,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: provider.isSaving
+                        ? null
+                        : () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                    tooltip: 'Cerrar sin guardar',
+                  ),
+                ],
               ),
               const SizedBox(height: 18),
               _PatientTextField(

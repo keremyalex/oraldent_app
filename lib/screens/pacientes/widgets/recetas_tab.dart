@@ -283,11 +283,7 @@ class RecetaFormSheet extends StatefulWidget {
 
 class _RecetaFormSheetState extends State<RecetaFormSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _medicamentoController = TextEditingController();
-  final _dosisController = TextEditingController();
-  final _frecuenciaController = TextEditingController();
-  final _duracionController = TextEditingController();
-  final _indicacionesController = TextEditingController();
+  final List<_MedicationFields> _medicamentos = [];
   final _indicacionesGeneralesController = TextEditingController();
   final _observacionesController = TextEditingController();
 
@@ -296,25 +292,22 @@ class _RecetaFormSheetState extends State<RecetaFormSheet> {
     super.initState();
     final receta = widget.receta;
     if (receta == null) {
+      _medicamentos.add(_MedicationFields());
       return;
     }
-    final detalle = receta.detalles.isEmpty ? null : receta.detalles.first;
-    _medicamentoController.text = detalle?.medicamento ?? '';
-    _dosisController.text = detalle?.dosis ?? '';
-    _frecuenciaController.text = detalle?.frecuencia ?? '';
-    _duracionController.text = detalle?.duracion ?? '';
-    _indicacionesController.text = detalle?.indicaciones ?? '';
+    _medicamentos.addAll(receta.detalles.map(_MedicationFields.fromDetalle));
+    if (_medicamentos.isEmpty) {
+      _medicamentos.add(_MedicationFields());
+    }
     _indicacionesGeneralesController.text = receta.indicacionesGenerales ?? '';
     _observacionesController.text = receta.observaciones ?? '';
   }
 
   @override
   void dispose() {
-    _medicamentoController.dispose();
-    _dosisController.dispose();
-    _frecuenciaController.dispose();
-    _duracionController.dispose();
-    _indicacionesController.dispose();
+    for (final medicamento in _medicamentos) {
+      medicamento.dispose();
+    }
     _indicacionesGeneralesController.dispose();
     _observacionesController.dispose();
     super.dispose();
@@ -334,62 +327,95 @@ class _RecetaFormSheetState extends State<RecetaFormSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.receta == null ? 'Nueva receta' : 'Editar receta',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.inverted,
-                  fontWeight: FontWeight.w800,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.receta == null ? 'Nueva receta' : 'Editar receta',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: AppColors.inverted,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: provider.isSaving
+                        ? null
+                        : () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                    tooltip: 'Cerrar sin guardar',
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _medicamentoController,
-                decoration: const InputDecoration(
-                  labelText: 'Medicamento',
-                  prefixIcon: Icon(Icons.medication_outlined),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Medicamentos',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppColors.inverted,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: provider.isSaving ? null : _addMedication,
+                    icon: const Icon(Icons.add_rounded),
+                    tooltip: 'Agregar medicamento',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              for (var index = 0; index < _medicamentos.length; index++) ...[
+                _MedicationFormCard(
+                  fields: _medicamentos[index],
+                  number: index + 1,
+                  canRemove: _medicamentos.length > 1,
+                  enabled: !provider.isSaving,
+                  onRemove: () => _removeMedication(index),
                 ),
-                validator: (value) =>
-                    value == null || value.trim().isEmpty ? 'Requerido' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _dosisController,
-                decoration: const InputDecoration(labelText: 'Dosis'),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _frecuenciaController,
-                decoration: const InputDecoration(labelText: 'Frecuencia'),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _duracionController,
-                decoration: const InputDecoration(labelText: 'Duracion'),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _indicacionesController,
-                minLines: 2,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: 'Indicaciones del medicamento',
+                const SizedBox(height: 12),
+              ],
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDFA),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF99F6E4)),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _indicacionesGeneralesController,
-                minLines: 2,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: 'Indicaciones generales',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Indicaciones de la receta',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: AppColors.inverted,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _indicacionesGeneralesController,
+                      enabled: !provider.isSaving,
+                      minLines: 2,
+                      maxLines: 4,
+                      decoration: const InputDecoration(
+                        labelText: 'Indicaciones generales',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _observacionesController,
+                      enabled: !provider.isSaving,
+                      minLines: 2,
+                      maxLines: 4,
+                      decoration: const InputDecoration(
+                        labelText: 'Observaciones',
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _observacionesController,
-                minLines: 2,
-                maxLines: 4,
-                decoration: const InputDecoration(labelText: 'Observaciones'),
               ),
               const SizedBox(height: 18),
               SizedBox(
@@ -425,14 +451,15 @@ class _RecetaFormSheetState extends State<RecetaFormSheet> {
       ),
       observaciones: _emptyToNull(_observacionesController.text),
       detalles: [
-        RecetaDetalleRequest(
-          medicamento: _medicamentoController.text.trim(),
-          dosis: _emptyToNull(_dosisController.text),
-          frecuencia: _emptyToNull(_frecuenciaController.text),
-          duracion: _emptyToNull(_duracionController.text),
-          indicaciones: _emptyToNull(_indicacionesController.text),
-          orden: 0,
-        ),
+        for (var index = 0; index < _medicamentos.length; index++)
+          RecetaDetalleRequest(
+            medicamento: _medicamentos[index].medicamento.text.trim(),
+            dosis: _emptyToNull(_medicamentos[index].dosis.text),
+            frecuencia: _emptyToNull(_medicamentos[index].frecuencia.text),
+            duracion: _emptyToNull(_medicamentos[index].duracion.text),
+            indicaciones: _emptyToNull(_medicamentos[index].indicaciones.text),
+            orden: index,
+          ),
       ],
     );
 
@@ -463,6 +490,154 @@ class _RecetaFormSheetState extends State<RecetaFormSheet> {
   String? _emptyToNull(String value) {
     final text = value.trim();
     return text.isEmpty ? null : text;
+  }
+
+  void _addMedication() {
+    setState(() => _medicamentos.add(_MedicationFields()));
+  }
+
+  void _removeMedication(int index) {
+    final medication = _medicamentos.removeAt(index);
+    medication.dispose();
+    setState(() {});
+  }
+}
+
+class _MedicationFields {
+  _MedicationFields({
+    String medicamento = '',
+    String dosis = '',
+    String frecuencia = '',
+    String duracion = '',
+    String indicaciones = '',
+  }) : medicamento = TextEditingController(text: medicamento),
+       dosis = TextEditingController(text: dosis),
+       frecuencia = TextEditingController(text: frecuencia),
+       duracion = TextEditingController(text: duracion),
+       indicaciones = TextEditingController(text: indicaciones);
+
+  factory _MedicationFields.fromDetalle(RecetaDetalle detalle) {
+    return _MedicationFields(
+      medicamento: detalle.medicamento,
+      dosis: detalle.dosis ?? '',
+      frecuencia: detalle.frecuencia ?? '',
+      duracion: detalle.duracion ?? '',
+      indicaciones: detalle.indicaciones ?? '',
+    );
+  }
+
+  final TextEditingController medicamento;
+  final TextEditingController dosis;
+  final TextEditingController frecuencia;
+  final TextEditingController duracion;
+  final TextEditingController indicaciones;
+
+  void dispose() {
+    medicamento.dispose();
+    dosis.dispose();
+    frecuencia.dispose();
+    duracion.dispose();
+    indicaciones.dispose();
+  }
+}
+
+class _MedicationFormCard extends StatelessWidget {
+  const _MedicationFormCard({
+    required this.fields,
+    required this.number,
+    required this.canRemove,
+    required this.enabled,
+    required this.onRemove,
+  });
+
+  final _MedicationFields fields;
+  final int number;
+  final bool canRemove;
+  final bool enabled;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Medicamento $number',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppColors.inverted,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              if (canRemove)
+                IconButton(
+                  onPressed: enabled ? onRemove : null,
+                  icon: const Icon(Icons.remove_circle_outline_rounded),
+                  color: Colors.red.shade700,
+                  tooltip: 'Quitar medicamento',
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: fields.medicamento,
+            enabled: enabled,
+            decoration: const InputDecoration(
+              labelText: 'Medicamento',
+              prefixIcon: Icon(Icons.medication_outlined),
+            ),
+            validator: (value) =>
+                value == null || value.trim().isEmpty ? 'Requerido' : null,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: fields.dosis,
+                  enabled: enabled,
+                  decoration: const InputDecoration(labelText: 'Dosis'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextFormField(
+                  controller: fields.frecuencia,
+                  enabled: enabled,
+                  decoration: const InputDecoration(labelText: 'Frecuencia'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: fields.duracion,
+            enabled: enabled,
+            decoration: const InputDecoration(labelText: 'Duracion'),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: fields.indicaciones,
+            enabled: enabled,
+            minLines: 2,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Indicaciones del medicamento',
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

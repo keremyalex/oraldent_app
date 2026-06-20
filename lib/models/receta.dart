@@ -39,10 +39,7 @@ class Receta {
   final DateTime fechaActualizacion;
 
   String get titulo {
-    if (detalles.isEmpty) {
-      return 'Receta #$id';
-    }
-    return detalles.first.medicamento;
+    return 'Receta #$id';
   }
 
   String get fechaFormateada {
