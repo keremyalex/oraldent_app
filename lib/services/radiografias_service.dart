@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:odontologia_app/core/api_client.dart';
+import 'package:odontologia_app/models/analisis_radiografia.dart';
 import 'package:odontologia_app/models/radiografia.dart';
 
 class RadiografiaRequest {
@@ -117,5 +118,22 @@ class RadiografiasService {
 
   Future<void> desactivar(int radiografiaId) async {
     await _apiClient.dio.delete<void>('/api/radiografias/$radiografiaId');
+  }
+
+  Future<List<AnalisisRadiografia>> listarAnalisis(int radiografiaId) async {
+    final response = await _apiClient.dio.get<List<dynamic>>(
+      '/api/radiografias/$radiografiaId/analisis',
+    );
+    return response.data!
+        .cast<Map<String, dynamic>>()
+        .map(AnalisisRadiografia.fromJson)
+        .toList();
+  }
+
+  Future<AnalisisRadiografia> analizarConIa(int radiografiaId) async {
+    final response = await _apiClient.dio.post<Map<String, dynamic>>(
+      '/api/radiografias/$radiografiaId/analizar-ia',
+    );
+    return AnalisisRadiografia.fromJson(response.data!);
   }
 }

@@ -1,7 +1,9 @@
+import 'package:odontologia_app/models/analisis_radiografia.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:odontologia_app/models/radiografia.dart';
 import 'package:odontologia_app/providers/radiografias_provider.dart';
+import 'package:odontologia_app/screens/pacientes/radiografias/analisis_radiografia_image_sheet.dart';
 import 'package:odontologia_app/screens/pacientes/radiografias/image_source_sheet.dart';
 import 'package:odontologia_app/screens/pacientes/radiografias/radiografia_card.dart';
 import 'package:odontologia_app/screens/pacientes/radiografias/radiografia_form_sheet.dart';
@@ -92,6 +94,15 @@ class _RadiografiasTabState extends State<RadiografiasTab> {
               padding: const EdgeInsets.only(bottom: 12),
               child: RadiografiaCard(
                 radiografia: radiografia,
+                analisis: provider.ultimoAnalisis(radiografia.id),
+                isAnalyzing: provider.analizandoRadiografia(radiografia.id),
+                onAnalyze: () => _analyzeWithIa(context, radiografia),
+                onViewAnalysisImage: () {
+                  final analisis = provider.ultimoAnalisis(radiografia.id);
+                  if (analisis != null) {
+                    _openAnalysisImage(context, analisis);
+                  }
+                },
                 onEdit: () => _openForm(context, radiografia: radiografia),
                 onReplaceImage: () => _replaceImage(context, radiografia),
                 onDelete: () => _confirmDelete(context, radiografia),
@@ -123,6 +134,40 @@ class _RadiografiasTabState extends State<RadiografiasTab> {
           ),
         );
       },
+    );
+  }
+
+  Future<void> _analyzeWithIa(
+    BuildContext context,
+    Radiografia radiografia,
+  ) async {
+    final message = await context.read<RadiografiasProvider>().analizarConIa(
+      radiografia,
+    );
+    if (!context.mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message ?? 'Analisis IA guardado.'),
+        backgroundColor: message == null ? AppColors.primary : Colors.red,
+      ),
+    );
+  }
+
+  Future<void> _openAnalysisImage(
+    BuildContext context,
+    AnalisisRadiografia analisis,
+  ) {
+    return showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => AnalisisRadiografiaImageSheet(analisis: analisis),
     );
   }
 

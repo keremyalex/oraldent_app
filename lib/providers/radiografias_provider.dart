@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:odontologia_app/core/api_client.dart';
+import 'package:odontologia_app/models/analisis_radiografia.dart';
 import 'package:odontologia_app/models/radiografia.dart';
 import 'package:odontologia_app/services/radiografias_service.dart';
 
@@ -9,7 +10,9 @@ class RadiografiasProvider extends ChangeNotifier {
   final RadiografiasService _service;
 
   final Map<int, List<Radiografia>> _radiografiasPorFicha = {};
+  final Map<int, List<AnalisisRadiografia>> _analisisPorRadiografia = {};
   final Set<int> _fichasCargando = {};
+  final Set<int> _radiografiasAnalizando = {};
   final Map<int, String> _erroresPorFicha = {};
   bool _isSaving = false;
 
@@ -27,13 +30,24 @@ class RadiografiasProvider extends ChangeNotifier {
     return _erroresPorFicha[fichaId];
   }
 
+  bool analizandoRadiografia(int radiografiaId) {
+    return _radiografiasAnalizando.contains(radiografiaId);
+  }
+
+  AnalisisRadiografia? ultimoAnalisis(int radiografiaId) {
+    final items = _analisisPorRadiografia[radiografiaId] ?? const [];
+    return items.isEmpty ? null : items.first;
+  }
+
   Future<void> load(int fichaId) async {
     _fichasCargando.add(fichaId);
     _erroresPorFicha.remove(fichaId);
     notifyListeners();
 
     try {
-      _radiografiasPorFicha[fichaId] = await _service.listarPorFicha(fichaId);
+      final radiografias = await _service.listarPorFicha(fichaId);
+      _radiografiasPorFicha[fichaId] = radiografias;
+      await _loadAnalisisDeRadiografias(radiografias);
     } catch (error) {
       _erroresPorFicha[fichaId] = apiErrorMessage(error);
     } finally {
@@ -139,6 +153,27 @@ class RadiografiasProvider extends ChangeNotifier {
     }
   }
 
+  Future<String?> analizarConIa(Radiografia radiografia) async {
+    _radiografiasAnalizando.add(radiografia.id);
+    notifyListeners();
+
+    try {
+      final analisis = await _service.analizarConIa(radiografia.id);
+      _analisisPorRadiografia[radiografia.id] = [
+        analisis,
+        ...(_analisisPorRadiografia[radiografia.id] ?? const []),
+      ];
+      _radiografiasPorFicha[radiografia.fichaClinicaId] = await _service
+          .listarPorFicha(radiografia.fichaClinicaId);
+      return null;
+    } catch (error) {
+      return apiErrorMessage(error);
+    } finally {
+      _radiografiasAnalizando.remove(radiografia.id);
+      notifyListeners();
+    }
+  }
+
   void _replace(Radiografia radiografia) {
     final current = radiografiasDeFicha(radiografia.fichaClinicaId);
     final index = current.indexWhere((item) => item.id == radiografia.id);
@@ -154,5 +189,19 @@ class RadiografiasProvider extends ChangeNotifier {
       radiografia,
       ...current.skip(index + 1),
     ];
+  }
+
+  Future<void> _loadAnalisisDeRadiografias(
+    List<Radiografia> radiografias,
+  ) async {
+    for (final radiografia in radiografias) {
+      try {
+        _analisisPorRadiografia[radiografia.id] = await _service.listarAnalisis(
+          radiografia.id,
+        );
+      } catch (_) {
+        _analisisPorRadiografia[radiografia.id] = const [];
+      }
+    }
   }
 }

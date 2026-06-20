@@ -95,12 +95,25 @@ class _RadiografiaFormSheetState extends State<RadiografiaFormSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                isEditing ? 'Editar radiografia' : 'Nueva radiografia',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.inverted,
-                  fontWeight: FontWeight.w800,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      isEditing ? 'Editar radiografia' : 'Nueva radiografia',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: AppColors.inverted,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: provider.isSaving
+                        ? null
+                        : () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                    tooltip: 'Cerrar sin guardar',
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               if (!isEditing) ...[
