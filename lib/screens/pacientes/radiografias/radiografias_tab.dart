@@ -97,6 +97,9 @@ class _RadiografiasTabState extends State<RadiografiasTab> {
                 analisis: provider.ultimoAnalisis(radiografia.id),
                 isAnalyzing: provider.analizandoRadiografia(radiografia.id),
                 onAnalyze: () => _analyzeWithIa(context, radiografia),
+                onPdf: provider.isSaving
+                    ? null
+                    : () => _openPdf(context, radiografia),
                 onViewAnalysisImage: () {
                   final analisis = provider.ultimoAnalisis(radiografia.id);
                   if (analisis != null) {
@@ -152,6 +155,18 @@ class _RadiografiasTabState extends State<RadiografiasTab> {
         content: Text(message ?? 'Analisis IA guardado.'),
         backgroundColor: message == null ? AppColors.primary : Colors.red,
       ),
+    );
+  }
+
+  Future<void> _openPdf(BuildContext context, Radiografia radiografia) async {
+    final message = await context.read<RadiografiasProvider>().abrirPdf(
+      radiografia,
+    );
+    if (!context.mounted || message == null) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 

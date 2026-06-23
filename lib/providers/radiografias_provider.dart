@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:odontologia_app/core/api_client.dart';
 import 'package:odontologia_app/models/analisis_radiografia.dart';
 import 'package:odontologia_app/models/radiografia.dart';
@@ -170,6 +171,27 @@ class RadiografiasProvider extends ChangeNotifier {
       return apiErrorMessage(error);
     } finally {
       _radiografiasAnalizando.remove(radiografia.id);
+      notifyListeners();
+    }
+  }
+
+  Future<String?> abrirPdf(Radiografia radiografia) async {
+    _isSaving = true;
+    notifyListeners();
+
+    try {
+      final filePath = await _service.descargarPdf(radiografia.id);
+      final result = await OpenFilex.open(filePath);
+      if (result.type == ResultType.done) {
+        return null;
+      }
+      return result.message.isEmpty
+          ? 'No se pudo abrir el PDF.'
+          : result.message;
+    } catch (error) {
+      return apiErrorMessage(error);
+    } finally {
+      _isSaving = false;
       notifyListeners();
     }
   }

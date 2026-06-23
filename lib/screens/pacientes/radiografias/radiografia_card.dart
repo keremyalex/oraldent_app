@@ -10,6 +10,7 @@ class RadiografiaCard extends StatelessWidget {
     required this.onReplaceImage,
     required this.onDelete,
     required this.onAnalyze,
+    required this.onPdf,
     this.onViewAnalysisImage,
     this.analisis,
     this.isAnalyzing = false,
@@ -23,6 +24,7 @@ class RadiografiaCard extends StatelessWidget {
   final VoidCallback onReplaceImage;
   final VoidCallback onDelete;
   final VoidCallback onAnalyze;
+  final VoidCallback? onPdf;
   final VoidCallback? onViewAnalysisImage;
 
   @override
@@ -126,6 +128,11 @@ class RadiografiaCard extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
+              _ActionChipButton(
+                icon: Icons.picture_as_pdf_outlined,
+                label: 'PDF',
+                onTap: onPdf,
+              ),
               _ActionChipButton(
                 icon: Icons.auto_awesome_rounded,
                 label: isAnalyzing ? 'Analizando...' : 'Analizar IA',
